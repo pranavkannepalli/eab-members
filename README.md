@@ -13,13 +13,13 @@ No env needed locally: it uses an embedded Postgres (PGlite) in ./.data and seed
 1. Create a Postgres DB (Neon via Vercel Marketplace, or Supabase). Copy its connection string.
 2. Google Cloud Console > Credentials > OAuth client (Web). Redirect URI: `https://members.entrepreneursatberkeley.com/api/auth/callback/google`. Consent screen "Internal" is not available outside a Workspace org, so keep it External + in production.
 3. Push this folder to a GitHub repo and import it in Vercel. Set env vars from `.env.example`:
-   `DATABASE_URL`, `ADMIN_PASSWORD`, `AUTH_SECRET`, and optionally `ALLOWED_DOMAIN` (default berkeley.edu), `ALLOWED_EMAILS` (extra exceptions), `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`.
+   `DATABASE_URL`, `ADMIN_PASSWORD`, `AUTH_SECRET`, and optionally `ALLOWED_EMAILS` (bootstrap), `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`.
 4. Deploy. Tables are created and seeded automatically on first request.
 
 ## Notes
 - Admin: /admin is protected by the ADMIN_PASSWORD env var. Admin mode is the only way to add, edit, delete, promote or import. Without Google configured, the admin password is the only way into the site.
 - Prospects vs Deals: Deals are confirmed only. Outreach targets live in Prospects; an admin promotes one to a Deal explicitly.
-- Members: sign in with Google; verified @berkeley.edu accounts (or emails in `ALLOWED_EMAILS`) can view. Set `ALLOWED_DOMAIN=` empty to restrict to the list only.
+- Access: Google sign-in, members only. A person gets in if a Member record (status Active or Exec) has their Google email. Checked on every page load, so setting a member to Inactive or deleting them locks them out. `ALLOWED_EMAILS` is only a bootstrap list for the first admins. The seeded members have no emails yet: add them in /admin (or CSV import) before inviting anyone.
 - Domain: add `members` CNAME in Wix DNS to Vercel, add the domain in Vercel, and use `https://members.entrepreneursatberkeley.com/api/auth/callback/google` as the Google redirect URI.
 - (old note) Dev login is disabled when NODE_ENV=production.
 - Schema: one `records` table (type, name, status, data jsonb, notes). Fields per type live in `lib/schema.ts`; add a field there and it shows up in forms, lists and CSV export.

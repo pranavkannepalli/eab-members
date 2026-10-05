@@ -11,12 +11,14 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
   if (!(await isAdmin())) redirect("/admin/login");
   const { msg } = await searchParams;
   const counts = await query("select type, count(*)::int n, max(updated_at) last from records group by type");
+  const [{ withEmail, total }] = await query("select count(*) filter (where coalesce(data->>'email','')<>'' and status in ('Active','Exec'))::int withEmail, count(*)::int total from records where type='members'");
   return (
     <div className="page"><Nav admin />
       <main>
         <div className="head"><div><h1>Admin</h1><p className="muted">Manage what is on this site. Admin mode lets you add, edit, delete and promote entries everywhere.</p></div>
           <form action={adminLogout}><button className="btn ghost">Lock</button></form></div>
         {msg && <p className="notice">{msg}</p>}
+        <p className="notice">Site access: {withEmail} of {total} members can sign in (Active/Exec with an email on file). Add emails on the <Link href="/crm/members">Members</Link> records to let people in.</p>
         <table><thead><tr><th>Tab</th><th>Entries</th><th>Last change</th><th></th></tr></thead><tbody>
           {TYPES.map((t) => { const c = counts.find((x) => x.type === t.slug); return (
             <tr key={t.slug}><td><Link href={`/crm/${t.slug}`}>{t.label}</Link></td><td>{c?.n ?? 0}</td><td className="muted">{c ? new Date(c.last).toLocaleString() : "-"}</td>
