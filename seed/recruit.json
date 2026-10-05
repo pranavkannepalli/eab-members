@@ -1,0 +1,162 @@
+[
+  {
+    "name": "Jane Street",
+    "segment": "Quant trading",
+    "route": "https://www.janestreet.com/join-jane-street/programs-and-events/jsip/",
+    "roles": "Campus Recruiter, Early Careers Partnerships & Initiatives (role posted at janestreet.com/join-jane-street/open-roles/)",
+    "angle": "Has programs/events pages (JSIP, Bridge, In Focus). Pitch a poker night: fits their culture.",
+    "status": "Not started"
+  },
+  {
+    "name": "Citadel / Citadel Securities",
+    "segment": "Quant trading / hedge fund",
+    "route": "https://www.citadel.com/careers/students/internships/",
+    "roles": "Campus Recruiter (posted: citadel.com/careers/details/campus-recruiter/)",
+    "angle": "Separate pages for Citadel and Citadel Securities (citadelsecurities.com/careers/students/internships/). Ask both.",
+    "status": "Not started"
+  },
+  {
+    "name": "Two Sigma",
+    "segment": "Quant / hedge fund",
+    "route": "https://www.twosigma.com/undergraduate-students/",
+    "roles": "Campus / early-careers recruiting team",
+    "angle": "Runs the New Seekers Summit (twosigma.com/new-seekers-summit/).",
+    "status": "Not started"
+  },
+  {
+    "name": "Hudson River Trading",
+    "segment": "Quant trading",
+    "route": "https://www.hudsonrivertrading.com/hrt-job/campus-recruiter/",
+    "roles": "Campus Recruiter (role posted on page)",
+    "angle": "Known for technical events; poker/game night angle.",
+    "status": "Not started"
+  },
+  {
+    "name": "Jump Trading",
+    "segment": "Quant trading",
+    "route": "https://www.jumptrading.com/hr/students-new-grads",
+    "roles": "Students & New Grads recruiting team",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "DRW",
+    "segment": "Quant trading",
+    "route": "https://www.drw.com/tags/university-recruiting",
+    "roles": "University Recruiting team",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "IMC Trading",
+    "segment": "Market maker",
+    "route": "https://www.imc.com/us/careers/students-graduates",
+    "roles": "US students/graduates recruiting team",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "Google",
+    "segment": "Big tech",
+    "route": "https://www.google.com/about/careers/applications/students/",
+    "roles": "University recruiting / campus programs",
+    "angle": "Pranav has Google interview in progress, so he may have a warm contact. Check before cold outreach.",
+    "status": "Not started"
+  },
+  {
+    "name": "Meta",
+    "segment": "Big tech",
+    "route": "https://www.metacareers.com/careerprograms/students/",
+    "roles": "University Recruiting",
+    "angle": "Also has Meta University program.",
+    "status": "Not started"
+  },
+  {
+    "name": "Microsoft",
+    "segment": "Big tech",
+    "route": "https://careers.microsoft.com/students/",
+    "roles": "University recruiting (virtual events page: careers.microsoft.com/v2/global/en/virtualevents)",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "Amazon",
+    "segment": "Big tech",
+    "route": "https://www.amazon.jobs/content/en/career-programs/university",
+    "roles": "Amazon University Talent Acquisition (AUTA) campus engagement",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "NVIDIA",
+    "segment": "Big tech / AI hardware",
+    "route": "https://www.nvidia.com/en-us/about-nvidia/careers/university-recruiting/",
+    "roles": "University recruiting team (event calendar: .../university-recruiting/events-calendar/)",
+    "angle": "Also a deals target via Inception.",
+    "status": "Not started"
+  },
+  {
+    "name": "OpenAI",
+    "segment": "AI lab",
+    "route": "https://openai.com/careers/emerging-talent/",
+    "roles": "Emerging Talent programs team",
+    "angle": "Pair with the ambassador/campus-network ask.",
+    "status": "Not started"
+  },
+  {
+    "name": "Anthropic",
+    "segment": "AI lab",
+    "route": "https://www.anthropic.com/careers",
+    "roles": "Recruiting team via careers page",
+    "angle": "Pair with Claude Campus Program ask.",
+    "status": "Not started"
+  },
+  {
+    "name": "Stripe",
+    "segment": "Fast-growing / fintech",
+    "route": "https://stripe.com/careers/emerging-talent",
+    "roles": "University Recruiting (roles posted: University Recruiter / Manager)",
+    "angle": "Pranav is already interviewing with Stripe per notes; check for a warm intro.",
+    "status": "Not started"
+  },
+  {
+    "name": "Databricks",
+    "segment": "Fast-growing / data+AI",
+    "route": "https://www.databricks.com/company/careers/university-recruiting",
+    "roles": "University recruiting team",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "Scale AI",
+    "segment": "Fast-growing / AI",
+    "route": "https://scale.com/careers/university",
+    "roles": "University recruiting",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "Ramp",
+    "segment": "Fast-growing / fintech",
+    "route": "https://ramp.com/emerging-talent",
+    "roles": "Emerging Talent team",
+    "angle": "",
+    "status": "Not started"
+  },
+  {
+    "name": "Y Combinator Work at a Startup",
+    "segment": "Startup job board (many companies at once)",
+    "route": "https://www.workatastartup.com/companies",
+    "roles": "Company founders / hiring managers directly",
+    "angle": "One channel to reach many YC startups. Diana and Megan Ehrlich at YC are a possible intro route.",
+    "status": "Not started"
+  },
+  {
+    "name": "Berkeley Career Engagement (school channel)",
+    "segment": "Campus employer relations",
+    "route": "https://career.berkeley.edu/employers/contact-employer-relations/",
+    "roles": "Employer Relations staff",
+    "angle": "Not a buyer, but they know which employers are actively recruiting at Cal. Ask for intros and rules about charging recruiters.",
+    "status": "Not started"
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Notion",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "E@B startup-network partner link; Business/AI trials for member startups; club workspace support separately.",
+    "roles": "Startup Partnerships Manager / Head of Startups; Community Partnerships",
+    "why": "Startup partner and Builders programs explicitly serve networks/audiences.",
+    "route": "Partners page > Startup Partner Program or Builders Program.",
+    "caveat": "Published startup trials are not automatically club workspace benefits. Existing paying users and company eligibility affect access."
+  },
+  {
+    "name": "Linear",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "Dedicated E@B partner redemption link; up to 6-month startup trial; build-and-ship workshop.",
+    "roles": "Startup Program Manager / Ecosystem Partnerships; Community Lead",
+    "why": "Official program explicitly includes startup communities as partners.",
+    "route": "Startups page > Become a Startup Program partner.",
+    "caveat": "Offers apply to eligible affiliated companies, not all club members or the club itself."
+  },
+  {
+    "name": "ElevenLabs",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "Credits/in-kind prizes for an in-person campus hackathon; voice-AI demo workshop; founder grants referrals.",
+    "roles": "Education / Student Programs; Community Partnerships; Developer Relations",
+    "why": "Students page explicitly invites campus hackathon partnerships.",
+    "route": "Students page > Hackathons & Events; separate Startup Grants path for companies.",
+    "caveat": "Grants require long-term monetized startup use, not one-off event projects; avoid promising club-wide paid subscriptions."
+  },
+  {
+    "name": "GitHub",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "E@B as startup ecosystem partner; startup developer-tool benefits; student OSS/build events.",
+    "roles": "GitHub for Startups Partnerships; GitHub Education / Developer Relations",
+    "why": "Partner application includes Startup Ecosystem Partner; published partner list includes student entrepreneurship organizations.",
+    "route": "GitHub for Startups partner application.",
+    "caveat": "Approval required. Startup partner route is different from individual Student Developer Pack benefits."
+  },
+  {
+    "name": "Vercel / v0",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "Partner referral channel for member startups; deployment workshop; ask for separate v0 hackathon credits.",
+    "roles": "Startup Partnerships; Developer Relations / Community; v0 Community",
+    "why": "Vercel has a startups team and explicit partner-interest route; useful for student MVPs.",
+    "route": "Startups page > Contact the Startups Team / joining as a partner.",
+    "caveat": "Startup eligibility and partnership proof apply. Current Flex Commit terms include v0; request a separate event pool for club members who do not qualify."
+  },
+  {
+    "name": "MongoDB",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "E@B startup referral partnership with Atlas/Voyage AI benefits plus technical office hours.",
+    "roles": "MongoDB for Startups / Startup Partnerships; Developer Relations",
+    "why": "Official page solicits partners supporting founders.",
+    "route": "Startups page > Partner with MongoDB; startups@mongodb.com.",
+    "caveat": "Published route usually uses VC/accelerator referrals; confirm whether E@B qualifies as a community partner."
+  },
+  {
+    "name": "Algolia",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "E@B startup-program partner access; search/RAG build workshop and credits for eligible ventures.",
+    "roles": "Startup Program Manager / Ecosystem Partnerships; Developer Relations",
+    "why": "Official page invites startup programs and incubators to distribute its offer.",
+    "route": "Industries/startups page > Partner with Algolia > reach out.",
+    "caveat": "Published offer is for qualifying startups, new/free users and no prior coupon; not a transferable club credit pool."
+  },
+  {
+    "name": "Datadog",
+    "tier": "First wave: direct community/partner fit",
+    "angle": "Partner referral link for member startups; monitoring workshop and startup credits.",
+    "roles": "Datadog for Startups Partnerships; Developer Advocacy",
+    "why": "Official startup partner mailbox is published; useful when ventures reach deployment.",
+    "route": "ddfspartners@datadoghq.com.",
+    "caveat": "Companies must be Series A or earlier, new to Datadog and referred by an approved partner. Club acceptance is unconfirmed."
+  },
+  {
+    "name": "OpenAI",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Campus Network club partnership, hands-on Codex/API workshop, event credits; startup credits referral options separately.",
+    "roles": "Campus Network / Education Partnerships; Developer Relations; Startup Partnerships",
+    "why": "Official club-interest route is better aligned than asking a sales team for a blanket discount.",
+    "route": "Student club interest form; startups page for founder resources.",
+    "caveat": "Startup credits run through eligible VC partners. Club-interest form does not promise a discount or sponsorship contract."
+  },
+  {
+    "name": "Anthropic",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Claude build night with credits/prizes, speaker support; founder program referrals.",
+    "roles": "Campus / Education Partnerships; Developer Relations; Startup Ecosystem Partnerships",
+    "why": "Campus and startup programs show relevant audiences and possible event relationships.",
+    "route": "Claude for Startups apply route; campus team for club collaboration.",
+    "caveat": "Founders can apply without VC backing, but credit eligibility varies. Campus ambassador September cycle is closed; event sponsorship is a separate ask."
+  },
+  {
+    "name": "Cursor",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Cursor build workshop, club-cohosted event funding, temporary event licenses or student benefit distribution.",
+    "roles": "Campus Programs / Community; Developer Relations",
+    "why": "Campus Leads explicitly co-host with student clubs and receive event resources.",
+    "route": "students@cursor.com; Campus Leads interest page.",
+    "caveat": "Campus program reopening does not block a separate club partnership inquiry. No E@B-exclusive discount is verified."
+  },
+  {
+    "name": "Replit",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Prompt-to-product workshop with event credits and startup demos.",
+    "roles": "Community / Ambassador Program; Developer Relations; Partnerships",
+    "why": "Official community program supports events and builders with credits.",
+    "route": "community@repl.it.",
+    "caveat": "Ambassador intake copy conflicts; ask for direct event collaboration without assuming selection or a club discount."
+  },
+  {
+    "name": "AWS",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Activate access for eligible member ventures; startup office hours and build-event credits.",
+    "roles": "AWS Activate / Startup Business Development; University or Developer Relations",
+    "why": "Activate manages provider-distributed benefits; DevRel can support learning events.",
+    "route": "AWS Activate Providers page > provider application / Contact us.",
+    "caveat": "Provider criteria emphasize VCs, seed investors and accelerators actively investing. E@B may need an accelerator partner rather than qualify alone."
+  },
+  {
+    "name": "Google Cloud",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Startup Cloud Program referral path for founders; Firebase/AI workshops; scoped event credit request.",
+    "roles": "Startup Ecosystem / Google for Startups Cloud; Developer Relations; Education Partnerships",
+    "why": "Official startup ecosystem has credits and partner perks.",
+    "route": "Startup Perks page and startup team routes.",
+    "caveat": "Startup program credits and tier-exclusive perks are for eligible companies. A club-exclusive code is not a published entitlement."
+  },
+  {
+    "name": "Microsoft",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Azure/startup onboarding session, technical speaker, event credits and founder benefits referral.",
+    "roles": "Microsoft for Startups / Ecosystem Partnerships; Student Ambassador team; Developer Relations",
+    "why": "Startup and student programs offer distinct founder and learning benefits.",
+    "route": "Microsoft for Startups page > sign up; student program for campus community.",
+    "caveat": "Use current Microsoft for Startups branding; do not assume old Founders Hub benefits or blanket club eligibility."
+  },
+  {
+    "name": "NVIDIA",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Inception onboarding for member AI startups; Deep Learning Institute workshop/training access and technical speaker.",
+    "roles": "Inception Program / Startup Ecosystem; Developer Relations; University Relations",
+    "why": "Inception provides startup tools/training and partner offers; education contacts suit workshops.",
+    "route": "Inception page > program application / contact.",
+    "caveat": "Inception needs incorporated companies, working websites and at least one developer. It is not a student club GPU-credit grant."
+  },
+  {
+    "name": "Cloudflare",
+    "tier": "Second wave: campus events + gated startup benefits",
+    "angle": "Workers build workshop with small event credit pool; founder program referrals and affiliate-partner discussion.",
+    "roles": "Cloudflare for Startups / Startup Partnerships; Developer Advocacy",
+    "why": "Official startup credits and developer platform are relevant to shipping MVPs.",
+    "route": "Cloudflare Startups application/program page.",
+    "caveat": "Startup program has for-profit/company eligibility and partner/funding-dependent tiers; do not promise a club package."
+  },
+  {
+    "name": "Supabase",
+    "tier": "Exploratory: negotiate a new club offer",
+    "angle": "Weekend MVP workshop, mentor/office hours, project credits or short Pro trial for winners.",
+    "roles": "Developer Relations / Community; Partnerships",
+    "why": "Product fits student full-stack prototypes; official partner ecosystem provides a routing lead.",
+    "route": "Partner with Supabase page; developer/community team.",
+    "caveat": "No blanket startup credit or campus discount offer verified from the current official startup-solutions page. This is a proposed ask."
+  },
+  {
+    "name": "Canva",
+    "tier": "Exploratory: event support more plausible than exclusive codes",
+    "angle": "Pitch-deck/design workshop with event support from Community Fund; ask about a creator-led club collaboration.",
+    "roles": "Community Programs / Community Fund; Education Partnerships",
+    "why": "Official Community Fund lists Canva education events for professors and students as an event idea.",
+    "route": "Community page > Canva Community Fund > apply with event details.",
+    "caveat": "Canvassador applications open periodically; no specific open intake or E@B-exclusive trial verified. Fund approval is separate from ambassador status."
+  },
+  {
+    "name": "Figma",
+    "tier": "Exploratory: add value beyond existing student access",
+    "angle": "Startup prototyping workshop, mentor/design review, swag or demo-night prizes.",
+    "roles": "Education Partnerships / Education Community; Developer Relations",
+    "why": "Figma already offers education tools, so practical programming is a better incremental ask than a generic student discount.",
+    "route": "Figma for Education page; approach education/community team.",
+    "caveat": "Verified student/educator access already exists. Commercial startup use must be checked against education terms; no custom club deal is promised."
+  }
+]
