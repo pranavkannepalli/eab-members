@@ -29,8 +29,21 @@ export const TYPES: TypeCfg[] = [
     columns: ["company", "title", "cohort", "raised"],
   },
   {
-    slug: "deals", label: "Deals", singular: "Deal", blurb: "Perks, ambassador programs, sponsors and recruiting partners.",
-    statuses: ["Not started", "Drafted", "Contacted", "In conversation", "Won", "Passed"],
+    slug: "deals", label: "Deals", singular: "Deal", blurb: "Confirmed deals only: signed perks, ambassador programs, sponsors and recruiting partners.",
+    statuses: ["Confirmed", "Active", "Completed", "Expired"],
+    fields: [
+      { key: "category", label: "Category", kind: "select", options: ["Perk / credits", "Ambassador", "Event sponsor", "Recruiting", "Sponsorship", "Other"] },
+      { key: "tier", label: "Tier / priority" }, { key: "contact_name", label: "Contact name" },
+      { key: "contact_email", label: "Contact email", kind: "email" }, { key: "owner", label: "E@B owner" },
+      { key: "value", label: "Value (cash / credits)" }, { key: "next_step", label: "Next step" },
+      { key: "next_date", label: "Next step date", kind: "date" }, { key: "route", label: "Route / link", kind: "textarea" },
+      { key: "caveat", label: "Caveats", kind: "textarea" },
+    ],
+    columns: ["category", "owner", "next_step", "next_date"], filterField: "category",
+  },
+  {
+    slug: "prospects", label: "Prospects", singular: "Prospect", blurb: "Unconfirmed outreach targets. Nothing here is a deal until it is promoted.",
+    statuses: ["Researching", "Drafted", "Contacted", "In conversation", "Dropped"],
     fields: [
       { key: "category", label: "Category", kind: "select", options: ["Perk / credits", "Ambassador", "Event sponsor", "Recruiting", "Sponsorship", "Other"] },
       { key: "tier", label: "Tier / priority" }, { key: "contact_name", label: "Contact name" },

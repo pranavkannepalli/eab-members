@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { signIn, devLogin } from "@/auth";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -13,11 +14,12 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
             <button className="btn">Dev sign in</button>
             <p className="muted small">Local dev login. Set AUTH_GOOGLE_ID to use Google sign-in.</p>
           </form>
-        ) : (
+        ) : process.env.AUTH_GOOGLE_ID ? (
           <form action={async () => { "use server"; await signIn("google", { redirectTo: "/" }); }}>
             <button className="btn">Sign in with Google</button>
           </form>
-        )}
+        ) : null}
+        <p className="small"><Link href="/admin/login">Admin login</Link></p>
       </div>
     </main>
   );

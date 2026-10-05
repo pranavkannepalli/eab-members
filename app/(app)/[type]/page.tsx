@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { query, Rec } from "@/lib/db";
 import { bySlug } from "@/lib/schema";
+import { isAdmin } from "@/lib/admin";
 export const dynamic = "force-dynamic";
 
 export default async function List({ params, searchParams }: { params: Promise<{ type: string }>; searchParams: Promise<{ q?: string; status?: string; f?: string }> }) {
@@ -14,12 +15,13 @@ export default async function List({ params, searchParams }: { params: Promise<{
   if (status) { p.push(status); where.push(`status=$${p.length}`); }
   if (f && cfg.filterField) { p.push(cfg.filterField, f); where.push(`data->>$${p.length - 1}=$${p.length}`); }
   const rows: Rec[] = await query(`select * from records where ${where.join(" and ")} order by name`, p);
+  const admin = await isAdmin();
   const filterCfg = cfg.fields.find((x) => x.key === cfg.filterField);
   const cols = cfg.columns.map((k) => cfg.fields.find((x) => x.key === k)!);
   return (
     <>
-      <div className="head"><div><h1>{cfg.label}</h1><p className="muted">{cfg.blurb}</p></div>
-        <div><a className="btn ghost" href={`/api/export/${type}`}>Export CSV</a> <Link className="btn" href={`/${type}/new`}>+ Add {cfg.singular.toLowerCase()}</Link></div></div>
+      <div className="head"><div><p className="eyebrow">E@B CRM</p><h1>{cfg.label}</h1><p className="muted">{cfg.blurb}</p></div>
+        <div><a className="btn ghost" href={`/api/export/${type}`}>Export CSV</a> {admin && <Link className="btn" href={`/${type}/new`}>+ Add {cfg.singular.toLowerCase()}</Link>}</div></div>
       <form className="filters">
         <input name="q" defaultValue={q} placeholder={`Search ${cfg.label.toLowerCase()}`} />
         <select name="status" defaultValue={status}><option value="">All statuses</option>{cfg.statuses.map((s) => <option key={s}>{s}</option>)}</select>

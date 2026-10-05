@@ -32,10 +32,10 @@ function seedRows() {
     rows.push({ type: "alumni", name: `${c} (founder TBD)`, status: "Founder", data: { company: c, raised }, notes: "Company listed on the E@B site. Replace with the founder's name." });
   for (const d of rd("deals.json")) {
     const cat = /Ambassador/i.test(d.angle) ? "Ambassador" : /hackathon|event/i.test(d.angle) ? "Event sponsor" : "Perk / credits";
-    rows.push({ type: "deals", name: d.name, status: "Not started", data: { category: cat, tier: d.tier, route: d.route, caveat: d.caveat, contact_name: d.roles ? `Find: ${d.roles}` : "" }, notes: d.angle + (d.why ? `\n\nWhy: ${d.why}` : "") });
+    rows.push({ type: "prospects", name: d.name, status: "Researching", data: { category: cat, tier: d.tier, route: d.route, caveat: d.caveat, contact_name: d.roles ? `Find: ${d.roles}` : "" }, notes: "Unconfirmed target from outreach research. " + d.angle + (d.why ? `\n\nWhy: ${d.why}` : "") });
   }
   for (const r of rd("recruit.json")) {
-    rows.push({ type: "deals", name: r.name, status: /not started/i.test(r.status || "") || !r.status ? "Not started" : "Drafted", data: { category: "Recruiting", tier: r.segment, route: r.route, contact_name: r.roles ? `Find: ${r.roles}` : "" }, notes: r.angle || "" });
+    rows.push({ type: "prospects", name: r.name, status: /not started/i.test(r.status || "") || !r.status ? "Researching" : "Drafted", data: { category: "Recruiting", tier: r.segment, route: r.route, contact_name: r.roles ? `Find: ${r.roles}` : "" }, notes: r.angle || "" });
   }
   return rows;
 }

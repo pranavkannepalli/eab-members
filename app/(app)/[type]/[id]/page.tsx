@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { query, Rec } from "@/lib/db";
 import { bySlug } from "@/lib/schema";
-import { saveRecord, deleteRecord } from "@/app/actions";
+import { saveRecord, deleteRecord, promoteProspect } from "@/app/actions";
+import { isAdmin } from "@/lib/admin";
 import { RecordForm } from "@/components";
 export const dynamic = "force-dynamic";
 
@@ -14,11 +15,15 @@ export default async function Detail({ params }: { params: Promise<{ type: strin
   if (!rec) notFound();
   // Cross-links: other records that mention this name (e.g. a PoC named on a VC or deal).
   const related: Rec[] = await query("select * from records where id<>$1 and (data::text ilike $2 or notes ilike $2) order by type, name limit 12", [rec.id, `%${rec.name}%`]);
+  const admin = await isAdmin();
   return (
     <>
       <p className="small"><Link href={`/${type}`}>← {cfg.label}</Link></p>
       <div className="head"><h1>{rec.name}</h1>
-        <form action={deleteRecord.bind(null, type, rec.id)}><button className="btn danger" formNoValidate>Delete</button></form></div>
+        {admin && <div className="row">
+          {type === "prospects" && <form action={promoteProspect.bind(null, rec.id)}><button className="btn">Promote to confirmed deal</button></form>}
+          <form action={deleteRecord.bind(null, type, rec.id)}><button className="btn danger" formNoValidate>Delete</button></form></div>}</div>
+      {type === "prospects" && <p className="notice">Prospect: not a confirmed deal. Nothing has been agreed with this company.</p>}
       <p className="muted small">Updated {new Date(rec.updated_at).toLocaleString()}</p>
       <RecordForm cfg={cfg} rec={rec} action={saveRecord.bind(null, type, rec.id)} />
       {related.length > 0 && (
