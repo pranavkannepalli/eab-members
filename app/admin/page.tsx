@@ -19,8 +19,8 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
         {msg && <p className="notice">{msg}</p>}
         <table><thead><tr><th>Tab</th><th>Entries</th><th>Last change</th><th></th></tr></thead><tbody>
           {TYPES.map((t) => { const c = counts.find((x) => x.type === t.slug); return (
-            <tr key={t.slug}><td><Link href={`/${t.slug}`}>{t.label}</Link></td><td>{c?.n ?? 0}</td><td className="muted">{c ? new Date(c.last).toLocaleString() : "-"}</td>
-              <td><Link href={`/${t.slug}/new`}>Add</Link> · <a href={`/api/export/${t.slug}`}>Export CSV</a></td></tr>); })}
+            <tr key={t.slug}><td><Link href={`/crm/${t.slug}`}>{t.label}</Link></td><td>{c?.n ?? 0}</td><td className="muted">{c ? new Date(c.last).toLocaleString() : "-"}</td>
+              <td><Link href={`/crm/${t.slug}/new`}>Add</Link> · <a href={`/api/export/${t.slug}`}>Export CSV</a></td></tr>); })}
         </tbody></table>
         <section className="card"><h2>Import CSV</h2>
           <p className="muted small">Paste a CSV with a header row: name, status, then any field keys for that tab (use Export CSV for the exact columns), notes. Rows are added, nothing is overwritten.</p>

@@ -18,7 +18,7 @@ export default async function Detail({ params }: { params: Promise<{ type: strin
   const admin = await isAdmin();
   return (
     <>
-      <p className="small"><Link href={`/${type}`}>← {cfg.label}</Link></p>
+      <p className="small"><Link href={`/crm/${type}`}>← {cfg.label}</Link></p>
       <div className="head"><h1>{rec.name}</h1>
         {admin && <div className="row">
           {type === "prospects" && <form action={promoteProspect.bind(null, rec.id)}><button className="btn">Promote to confirmed deal</button></form>}
@@ -28,7 +28,7 @@ export default async function Detail({ params }: { params: Promise<{ type: strin
       <RecordForm cfg={cfg} rec={rec} action={saveRecord.bind(null, type, rec.id)} />
       {related.length > 0 && (
         <section className="card"><h2>Mentioned elsewhere</h2>
-          {related.map((r) => <p key={r.id}><Link href={`/${r.type}/${r.id}`}>{r.name}</Link> <span className="muted">{bySlug(r.type)?.singular}</span></p>)}
+          {related.map((r) => <p key={r.id}><Link href={`/crm/${r.type}/${r.id}`}>{r.name}</Link> <span className="muted">{bySlug(r.type)?.singular}</span></p>)}
         </section>
       )}
     </>

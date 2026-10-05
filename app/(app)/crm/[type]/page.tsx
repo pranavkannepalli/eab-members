@@ -20,8 +20,8 @@ export default async function List({ params, searchParams }: { params: Promise<{
   const cols = cfg.columns.map((k) => cfg.fields.find((x) => x.key === k)!);
   return (
     <>
-      <div className="head"><div><p className="eyebrow">E@B CRM</p><h1>{cfg.label}</h1><p className="muted">{cfg.blurb}</p></div>
-        <div><a className="btn ghost" href={`/api/export/${type}`}>Export CSV</a> {admin && <Link className="btn" href={`/${type}/new`}>+ Add {cfg.singular.toLowerCase()}</Link>}</div></div>
+      <div className="head"><div><p className="eyebrow">CRM</p><h1>{cfg.label}</h1><p className="muted">{cfg.blurb}</p></div>
+        <div><a className="btn ghost" href={`/api/export/${type}`}>Export CSV</a> {admin && <Link className="btn" href={`/crm/${type}/new`}>+ Add {cfg.singular.toLowerCase()}</Link>}</div></div>
       <form className="filters">
         <input name="q" defaultValue={q} placeholder={`Search ${cfg.label.toLowerCase()}`} />
         <select name="status" defaultValue={status}><option value="">All statuses</option>{cfg.statuses.map((s) => <option key={s}>{s}</option>)}</select>
@@ -32,7 +32,7 @@ export default async function List({ params, searchParams }: { params: Promise<{
         <thead><tr><th>Name</th><th>Status</th>{cols.map((c) => <th key={c.key}>{c.label}</th>)}</tr></thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.id}><td><Link href={`/${type}/${r.id}`}>{r.name}</Link></td><td>{r.status && <span className={`pill s-${r.status.replace(/\W/g, "")}`}>{r.status}</span>}</td>
+            <tr key={r.id}><td><Link href={`/crm/${type}/${r.id}`}>{r.name}</Link></td><td>{r.status && <span className={`pill s-${r.status.replace(/\W/g, "")}`}>{r.status}</span>}</td>
               {cols.map((c) => <td key={c.key}>{r.data[c.key] || ""}</td>)}</tr>
           ))}
           {rows.length === 0 && <tr><td colSpan={2 + cols.length} className="muted">Nothing here yet.</td></tr>}

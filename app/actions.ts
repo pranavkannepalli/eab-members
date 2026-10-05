@@ -24,23 +24,23 @@ export async function saveRecord(slug: string, id: number | null, fd: FormData) 
     const [row] = await query("insert into records(type,name,status,data,notes) values($1,$2,$3,$4,$5) returning id", [slug, r.name, r.status, JSON.stringify(r.data), r.notes]);
     id = row.id;
   }
-  revalidatePath(`/${slug}`);
-  redirect(`/${slug}/${id}`);
+  revalidatePath(`/crm/${slug}`);
+  redirect(`/crm/${slug}/${id}`);
 }
 
 export async function deleteRecord(slug: string, id: number) {
   await requireAdmin();
   await query("delete from records where id=$1 and type=$2", [id, slug]);
-  revalidatePath(`/${slug}`);
-  redirect(`/${slug}`);
+  revalidatePath(`/crm/${slug}`);
+  redirect(`/crm/${slug}`);
 }
 
 // Prospect -> confirmed deal. Only an admin can do this, and it is the only way something becomes a "Deal".
 export async function promoteProspect(id: number) {
   await requireAdmin();
   await query("update records set type='deals', status='Confirmed', updated_at=now() where id=$1 and type='prospects'", [id]);
-  revalidatePath("/prospects"); revalidatePath("/deals");
-  redirect(`/deals/${id}`);
+  revalidatePath("/crm", "layout");
+  redirect(`/crm/deals/${id}`);
 }
 
 export async function adminLogin(fd: FormData) {

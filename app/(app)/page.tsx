@@ -1,29 +1,41 @@
 import Link from "next/link";
-import { query, Rec } from "@/lib/db";
-import { TYPES, bySlug } from "@/lib/schema";
+import { query } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
-export default async function Dashboard() {
-  const counts = await query("select type, count(*)::int n from records group by type");
-  const recent: Rec[] = await query("select * from records order by updated_at desc limit 8");
-  const due: Rec[] = await query("select * from records where type in ('deals','prospects') and coalesce(data->>'next_date','')<>'' and status not in ('Dropped','Expired','Completed') order by data->>'next_date' limit 6");
-  const n = (s: string) => counts.find((c) => c.type === s)?.n ?? 0;
+type Book = { title: string; blurb: string; href?: string; stat?: string; tone: string };
+
+export default async function Bookcase() {
+  const [c] = await query("select count(*)::int n from records where type<>'prospects'");
+  const shelves: Book[][] = [
+    [
+      { title: "CRM", blurb: "Members, alumni, deals, VC partners and warm intros.", href: "/crm", stat: `${c?.n ?? 0} contacts`, tone: "navy" },
+      { title: "Finances", blurb: "Budget, reimbursements, sponsor money.", href: "/finances", stat: "Coming soon", tone: "blue" },
+      { title: "Resume book", blurb: "Member profiles for recruiters.", stat: "Planned", tone: "sky" },
+    ],
+    [
+      { title: "Perks", blurb: "E@B-exclusive deals and credits.", stat: "Planned", tone: "sky" },
+      { title: "Events", blurb: "Dinners, demo day, recruiting nights.", stat: "Planned", tone: "blue" },
+    ],
+  ];
   return (
     <>
-      <p className="eyebrow">E@B CRM</p><h1>Builders need other builders.</h1><p className="muted">Members, alumni, deals and investors in one place.</p>
-      <div className="grid">
-        {TYPES.map((t) => (
-          <Link key={t.slug} href={`/${t.slug}`} className="card stat"><b>{n(t.slug)}</b><span>{t.label}</span></Link>
+      <p className="eyebrow">E@B Members</p>
+      <h1>Builders need other builders.</h1>
+      <p className="muted">Everything the club runs on, on one shelf.</p>
+      <div className="case">
+        {shelves.map((row, i) => (
+          <div className="shelf" key={i}>
+            <div className="books">
+              {row.map((b) => {
+                const inner = (<><span className="tag">{b.stat}</span><strong>{b.title}</strong><span className="blurb">{b.blurb}</span></>);
+                return b.href
+                  ? <Link key={b.title} href={b.href} className={`book ${b.tone}`}>{inner}</Link>
+                  : <div key={b.title} className={`book soon ${b.tone}`}>{inner}</div>;
+              })}
+            </div>
+            <div className="plank" />
+          </div>
         ))}
-      </div>
-      <div className="two">
-        <section className="card"><h2>Next steps due</h2>
-          {due.length === 0 && <p className="muted">No dated next steps yet. Add a date on a deal.</p>}
-          {due.map((r) => <p key={r.id}><Link href={`/${r.type}/${r.id}`}>{r.name}</Link> <span className="muted">{r.data.next_date} - {r.data.next_step}</span></p>)}
-        </section>
-        <section className="card"><h2>Recently updated</h2>
-          {recent.map((r) => <p key={r.id}><Link href={`/${r.type}/${r.id}`}>{r.name}</Link> <span className="muted">{bySlug(r.type)?.singular}</span></p>)}
-        </section>
       </div>
     </>
   );

@@ -9,10 +9,9 @@ export async function Nav({ admin }: { admin?: boolean }) {
   const s = await auth();
   return (
     <header className="top">
-      <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley</span></Link>
+      <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley <b>Members</b></span></Link>
       <nav>
-        {TYPES.map((t) => <Link key={t.slug} href={`/${t.slug}`}>{t.label}</Link>)}
-        <form action="/search"><input name="q" placeholder="Search" /></form>
+        <Link href="/">Bookcase</Link>
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>
     </header>
@@ -42,5 +41,14 @@ export async function RecordForm({ cfg, rec, action }: { cfg: TypeCfg; rec?: Rec
           : <p className="wide muted small">Read-only. <Link href="/admin/login">Unlock admin</Link> to edit.</p>}
       </fieldset>
     </form>
+  );
+}
+
+export function CrmTabs() {
+  return (
+    <div className="tabs">
+      {TYPES.map((t) => <Link key={t.slug} href={`/crm/${t.slug}`}>{t.label}</Link>)}
+      <form action="/crm/search"><input name="q" placeholder="Search CRM" /></form>
+    </div>
   );
 }
