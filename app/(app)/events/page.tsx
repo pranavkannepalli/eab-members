@@ -4,6 +4,7 @@ import { today, upcomingEvents, isHttp } from "@/lib/feed";
 import { getIdentity, rsvpState } from "@/lib/identity";
 import { RsvpButton } from "@/ui/toggles";
 import { isAdmin } from "@/lib/admin";
+import { bySlug } from "@/lib/schema";
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -22,10 +23,10 @@ export default async function Events() {
   const admin = await isAdmin();
   return (
     <>
-      <div className="head"><div><p className="eyebrow">E@B Members</p><h1>Events</h1></div>
+      <div className="head"><div><h1>Events</h1><p className="muted">{bySlug("events")!.blurb}</p></div>
         {admin && <div><a className="btn ghost" href="/api/export/events">Export CSV</a> <Link className="btn" href="/events/new">+ Add event</Link></div>}</div>
       <h2 className="eyebrow section">Upcoming</h2>
-      {upcoming.length === 0 && <div className="card"><p className="muted">Nothing scheduled yet.</p></div>}
+      {upcoming.length === 0 && <div className="card"><p className="muted">Nothing on the calendar yet. Check back soon.</p></div>}
       {upcoming.map((e) => (
         <article key={e.id} className="card event">
           <DateChip date={e.data.date} />
@@ -38,7 +39,7 @@ export default async function Events() {
             {e.notes && <p className="oneline">{firstLine(e.notes)}</p>}
             <div className="evactions">
               <RsvpButton eventId={e.id} me={rsvps.me(e.id)} count={rsvps.count(e.id)} signedIn={!!me} />
-              {isHttp(e.data.rsvp) && <a className="btn ghost small" href={e.data.rsvp} target="_blank" rel="noreferrer">External RSVP ↗</a>}
+              {isHttp(e.data.rsvp) && <a className="btn ghost small" href={e.data.rsvp} target="_blank" rel="noreferrer">RSVP on the event page ↗</a>}
             </div>
           </div>
         </article>

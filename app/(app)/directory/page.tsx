@@ -2,6 +2,7 @@ import Link from "next/link";
 import { query, Rec } from "@/lib/db";
 import { Avatar } from "@/components";
 import { tags } from "@/lib/feed";
+import { plural } from "@/lib/format";
 import { isAdmin } from "@/lib/admin";
 export const dynamic = "force-dynamic";
 
@@ -12,10 +13,10 @@ export default async function Directory() {
   const others: Rec[] = admin ? await query("select * from records where type='members' and status not in ('Active','Exec') order by name") : [];
   return (
     <>
-      <div className="head"><div><p className="eyebrow">E@B Members</p><h1>Directory</h1>
-        <p className="muted">{members.length} active members and exec.</p></div>
+      <div className="head"><div><h1>Directory</h1>
+        <p className="muted">{plural(members.length, "member", "members")} building at Berkeley.</p></div>
         {admin && <div><a className="btn ghost" href="/api/export/members">Export CSV</a> <Link className="btn" href="/directory/new">+ Add member</Link></div>}</div>
-      {members.length === 0 && <div className="card"><p className="muted">No active members yet.</p></div>}
+      {members.length === 0 && <div className="card"><p className="muted">No one's here yet. Check back soon.</p></div>}
       <div className="people">
         {members.map((m) => (
           <Link key={m.id} href={`/directory/${m.id}`} className="card person">
@@ -31,7 +32,7 @@ export default async function Directory() {
         ))}
       </div>
       {others.length > 0 && (
-        <section className="card"><p className="eyebrow">Not in the directory (admins only)</p>
+        <section className="card"><p className="eyebrow">Hidden from the directory: pending or inactive</p>
           {others.map((m) => <p key={m.id}><Link href={`/directory/${m.id}`}>{m.name}</Link> <span className={`pill s-${m.status}`}>{m.status}</span></p>)}
         </section>
       )}

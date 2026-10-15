@@ -56,3 +56,6 @@ export const plural = (n: number, one: string, many = one + "s") => `${n} ${n ==
 
 /** "Fundraising, Hiring, B2B sales" -> up to 3 tags. */
 export const tags = (s?: string) => (s || "").split(",").map((t) => t.trim()).filter(Boolean).slice(0, 3);
+
+/** A label in running text: "Alumni" -> "alumni", but acronyms stay ("VCs", "VC"). */
+export const lower = (s: string) => (/^[A-Z]{2}/.test(s) ? s : s.toLowerCase());

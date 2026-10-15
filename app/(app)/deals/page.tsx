@@ -18,10 +18,9 @@ export default async function Deals({ searchParams }: { searchParams: Promise<Li
   const categories = bySlug("deals")!.fields.find((f) => f.key === "category")!.options!;
   return (
     <>
-      <p className="eyebrow">E@B Members</p>
       <h1>Deals</h1>
-      <p className="muted">Credits, discounts and programs E@B has confirmed for members.</p>
-      {perks.length === 0 && <div className="card"><p className="muted">No confirmed perks yet. When an admin confirms a deal it appears here.</p></div>}
+      <p className="muted">{bySlug("deals")!.blurb}</p>
+      {perks.length === 0 && <div className="card"><p className="muted">No deals yet. New ones show up here as soon as they're live.</p></div>}
       {groupBy(perks, "category", categories).map(([cat, rows]) => (
         <section key={cat}>
           <p className="eyebrow section">{cat}</p>
@@ -31,7 +30,7 @@ export default async function Deals({ searchParams }: { searchParams: Promise<Li
                 <h2><Link href={`/deals/${d.id}`}>{d.name}</Link></h2>
                 <ClaimButton dealId={d.id} claimed={claims.mine(d.id)} count={claims.count(d.id)} signedIn={!!me} />
               </div>
-              <p className="muted small">{[d.data.category, d.data.tier, d.data.value].filter(Boolean).join(" · ")}</p>
+              <p className="muted small">{d.data.value}</p>
               <Claim rec={d} />
             </article>
           ))}

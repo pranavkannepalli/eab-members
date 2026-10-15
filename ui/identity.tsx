@@ -27,7 +27,7 @@ function SignInModal({ onClose }: { onClose: () => void }) {
     <div className="modalback" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <form className="card modal" onSubmit={save} role="dialog" aria-modal aria-labelledby="signin-title">
         <h2 id="signin-title">Who's this?</h2>
-        <p className="muted small">Used to claim perks, RSVP and answer posts. Use the email E@B has on file and you'll show as a member.</p>
+        <p className="muted small">We'll use this when you claim deals, RSVP and answer posts. Use the email E@B has for you so you show up as a member.</p>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required autoFocus />
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@berkeley.edu" required />
         <div className="row"><button className="btn">Continue</button><button type="button" className="btn ghost" onClick={onClose}>Cancel</button></div>
@@ -94,7 +94,7 @@ export function IdentityBar({ me, member, notices }: { me: Me | null; member: bo
             <div className="popover">
               <p className="small"><b>{me.name}</b><br /><span className="muted">{me.email}</span></p>
               {me.source === "cookie" ? <button type="button" className="textbtn" onClick={signOut}>Sign out</button>
-                : <p className="muted small">Signed in with your account.</p>}
+                : <p className="muted small">Signed in with Google.</p>}
             </div>
           )}
         </>

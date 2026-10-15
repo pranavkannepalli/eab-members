@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { query, Rec } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
+import { bySlug } from "@/lib/schema";
 export const dynamic = "force-dynamic";
 
 // Leading number of an amount string: "$1,200" -> 1200. null when there is none ("$fifty", "").
@@ -10,7 +11,7 @@ const money = (n: number) => "$" + n.toLocaleString("en-US", { maximumFractionDi
 const CARDS: { label: string; kind: string; statuses: string[] }[] = [
   { label: "Budget", kind: "Budget line", statuses: ["Planned", "Committed", "Paid"] },
   { label: "Spent", kind: "Expense", statuses: ["Paid"] },
-  { label: "Sponsor money", kind: "Sponsorship", statuses: ["Committed", "Paid"] },
+  { label: "From sponsors", kind: "Sponsorship", statuses: ["Committed", "Paid"] },
   { label: "Reimbursed", kind: "Reimbursement", statuses: ["Reimbursed"] },
 ];
 
@@ -24,16 +25,16 @@ export default async function Finances() {
   });
   return (
     <>
-      <div className="head"><div><p className="eyebrow">E@B Members</p><h1>Finances</h1></div>
+      <div className="head"><div><h1>Finances</h1><p className="muted">{bySlug("finance")!.blurb}</p></div>
         {admin && <div><a className="btn ghost" href="/api/export/finance">Export CSV</a> <Link className="btn" href="/finances/new">+ Add entry</Link></div>}</div>
       <div className="grid four">
         {totals.map((t) => (
           <div key={t.label} className="card stat"><b>{money(t.sum)}</b><span>{t.label}</span>
-            {t.uncounted > 0 && <span className="small">{t.uncounted} uncounted</span>}</div>
+            {t.uncounted > 0 && <span className="small">{t.uncounted} without an amount</span>}</div>
         ))}
       </div>
       <table>
-        <thead><tr><th>Kind</th><th>Name</th><th>Amount</th><th>Period</th><th>Counterparty</th><th>Status</th><th>Notes</th></tr></thead>
+        <thead><tr><th>Type</th><th>Name</th><th>Amount</th><th>Date</th><th>Paid to / from</th><th>Status</th><th>Notes</th></tr></thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.id}>
@@ -44,10 +45,10 @@ export default async function Finances() {
               <td className="muted small">{r.notes.length > 80 ? r.notes.slice(0, 80) + "…" : r.notes}</td>
             </tr>
           ))}
-          {rows.length === 0 && <tr><td colSpan={7} className="muted">No finance entries yet.</td></tr>}
+          {rows.length === 0 && <tr><td colSpan={7} className="muted">Nothing here yet.</td></tr>}
         </tbody>
       </table>
-      <p className="muted small">Finances are visible to all members. Amounts are managed by the development team; correct them via the admin page.</p>
+      <p className="muted small">Every member can see where club money comes from and where it goes. Spot something off? Let an exec know.</p>
     </>
   );
 }

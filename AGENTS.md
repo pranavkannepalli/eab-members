@@ -12,20 +12,20 @@ Stack: Next.js 15 App Router, React 19, NextAuth v5 beta (Google sign-in, member
 ## Pages
 Every page reads the same `records` table. Each type has one home page; detail pages are `<home>/<id>` and add forms `<home>/new` (admin). Members read; admins edit inline: an Add button in the page head, a save form, Delete and status shortcuts on detail pages. Generic list/detail/add views live in `ui/record-list.tsx` and `ui/record-page.tsx`; the slug -> path map (and which types are admin-only) is `lib/routes.ts`.
 
-There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Directory, Deals, Events, Resources, then Alumni, VCs, Intros and Finances only when the admin cookie is set, a built-in search input (plain GET form to `/search?q=`) and the Admin link. No tab bars, no second nav. Detail pages link back to their list.
+There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Directory, Deals, Events, Resources, then Alumni, VCs, Intros and Finances only when the admin cookie is set, a built-in search input (plain GET form to `/search?q=`) and the Admin link. No tab bars, no second nav. Detail pages link back to their list. Members get a read-only view on detail pages; fields marked `internal` in `lib/schema.ts` (and notes, for types with `internalNotes`) are admin-only.
 
 | Route | Module | Data |
 |---|---|---|
 | `/` | Feed: composer (admin), typed post cards, rail with upcoming events, perks, newest members | `updates`, `events`, `deals`, `members` |
 | `/updates/<id>` | One post with its answers thread; admins pin/unpin, archive/restore, edit, delete | `updates`, `comments` |
 | `/directory`, `/directory/<id>`, `/directory/new` | Member grid (expertise chips); profile: building, expertise, posts, intros they can make, perks claimed; admins edit inline and see Pending/Inactive members below the grid | `members` (grid: Active or Exec) |
-| `/deals`, `/deals/<id>`, `/deals/new` | Members: perks (Confirmed/Active deals) with how to claim, Claim button and count. Admins: the full pipeline table with status filter, "Mark confirmed" on detail | `deals` |
+| `/deals`, `/deals/<id>`, `/deals/new` | Members: perks (Confirmed/Active deals) with how to claim, Claim button and count. Admins: the full pipeline table with status filter, "Confirm deal" on detail | `deals` |
 | `/events`, `/events/<id>`, `/events/new` | Upcoming (date chip, Going / Not going with count, external RSVP link) and last 12 past; admins Add / edit | `events` (Upcoming / Past) |
 | `/resources`, `/resources/<id>`, `/resources/new` | Resources grouped by category; admins also see drafts and get Add / Edit | `resources` (members: Published only) |
 | `/finances`, `/finances/<id>`, `/finances/new` | Budget / Spent / Sponsor money / Reimbursed totals + all entries; admins Add / edit | `finance` |
 | `/alumni`, `/vcs`, `/intros` (+ `/<id>`, `/new`) | Admin only (members are redirected to `/`): list with filters, detail/edit | `alumni`, `vcs`, `pocs` |
 | `/search` | Search results for the top-bar search input (no form of its own); members only get records they can open | every type |
-| `/admin` | Admin: type table with counts and Add / Export links, CSV import, clear a tab | every type |
+| `/admin` | Admin: type table with counts and Add / Download CSV links, add from a spreadsheet (CSV import), delete everything in a section | every type |
 
 Old URLs redirect (308, `next.config.mjs`): `/crm/*` to the first-class homes (`/crm/prospects` -> `/deals`, `/crm/pocs` -> `/intros`, `/crm/updates/<id>` -> `/updates/<id>`, `/crm/overview` -> `/admin`, `/crm/search` -> `/search`), `/perks` -> `/deals`.
 
@@ -116,7 +116,7 @@ Shapes (every key optional except `name`; values are strings; unknown keys are s
 Dates are `YYYY-MM-DD`. Statuses and select options must match `lib/schema.ts`. `avatar` and `rsvp` are http(s) URLs (others are not rendered as links). Never invent amounts, people or links: `resources.json` and `finance.json` start empty on purpose.
 
 ## Conventions
-- `lib/schema.ts` is the single source of truth for types, fields, statuses and list columns. Add a field there and forms, lists, search, CSV and the API follow.
+- `lib/schema.ts` is the single source of truth for types, fields, statuses, list columns and display labels. Labels, `singular` and `blurb` are display-only and safe to reword; never rename slugs, field keys, statuses or select options (stored data). Add a field there and forms, lists, search, CSV and the API follow.
 - Never fabricate people, companies or relationships in seed files or via the API. Leave a field empty rather than guess.
 - Writes are admin-only: the admin cookie in the UI (`requireAdmin` in `app/actions.ts`), the bearer token in the API.
 - Site access is `isMemberEmail` (`lib/access.ts`): a Members record with status Active or Exec and a matching email, or an address in `ALLOWED_EMAILS`. Deactivating or deleting the member locks them out.

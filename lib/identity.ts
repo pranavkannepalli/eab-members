@@ -64,6 +64,6 @@ export async function notifications(email: string): Promise<Notice[]> {
      and id not in (select deal_id from claims where member_email=$1) order by updated_at desc limit 10`, [email]);
   return [
     ...soon.map((e) => ({ key: `event-${e.id}-${e.data.date}`, text: `${e.name} is ${e.data.date === now ? "today" : "tomorrow"}${e.data.time ? ` at ${e.data.time}` : ""}`, href: "/events" })),
-    ...perks.map((d) => ({ key: `perk-${d.id}`, text: `New perk: ${d.name}${d.data.value ? ` (${d.data.value})` : ""}`, href: `/deals/${d.id}` })),
+    ...perks.map((d) => ({ key: `perk-${d.id}`, text: `New deal: ${d.name}${d.data.value ? ` (${d.data.value})` : ""}`, href: `/deals/${d.id}` })),
   ];
 }

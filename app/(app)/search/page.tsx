@@ -15,10 +15,10 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
     <>
       <h1>Search</h1>
       {q ? <p className="muted">{rows.length} {rows.length === 1 ? "result" : "results"} for &ldquo;{q}&rdquo;</p>
-        : <p className="muted">Type in the search bar above to search everything: names, companies, emails, notes.</p>}
+        : <p className="muted">Use the search bar at the top to find people, companies, events and more.</p>}
       <table><tbody>
         {rows.map((r) => <tr key={r.id}><td><Link href={recordHref(r.type, r.id)}>{r.name}</Link></td><td className="muted">{bySlug(r.type)?.singular}</td><td>{r.status}</td></tr>)}
-        {q && rows.length === 0 && <tr><td className="muted">No matches.</td></tr>}
+        {q && rows.length === 0 && <tr><td className="muted">Nothing found for &ldquo;{q}&rdquo;. Try a shorter word or a different spelling.</td></tr>}
       </tbody></table>
     </>
   );

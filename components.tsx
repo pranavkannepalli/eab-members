@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { lower } from "@/lib/format";
 import { TypeCfg, bySlug, defaultStatus } from "@/lib/schema";
 import { query, Rec } from "@/lib/db";
 import { isHttp } from "@/lib/feed";
@@ -27,7 +28,7 @@ export async function Nav({ admin }: { admin?: boolean }) {
         {a && <Link href="/vcs">VCs</Link>}
         {a && <Link href="/intros">Intros</Link>}
         {a && <Link href="/finances">Finances</Link>}
-        <form action="/search" method="get" className="navsearch"><input type="search" name="q" placeholder="Search" aria-label="Search all records" /></form>
+        <form action="/search" method="get" className="navsearch"><input type="search" name="q" placeholder="Search people, events, deals…" aria-label="Search the site" /></form>
         <IdentityBar me={me} member={member} notices={notices} />
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>
@@ -40,7 +41,7 @@ export async function RecordForm({ cfg, rec, action }: { cfg: TypeCfg; rec?: Rec
   return (
     <form action={action} className="card form">
       <fieldset disabled={!admin}>
-        <label>Name<input name="name" defaultValue={rec?.name} required /></label>
+        <label>{cfg.nameLabel || "Name"}<input name="name" defaultValue={rec?.name} required /></label>
         <label>Status<select name="status" defaultValue={rec?.status || defaultStatus(cfg)}>{cfg.statuses.map((s) => <option key={s}>{s}</option>)}</select></label>
         {cfg.fields.map((f) => (
           <label key={f.key}>{f.label}
@@ -53,11 +54,28 @@ export async function RecordForm({ cfg, rec, action }: { cfg: TypeCfg; rec?: Rec
             )}
           </label>
         ))}
-        <label className="wide">Notes<textarea name="notes" rows={5} defaultValue={rec?.notes} /></label>
-        {admin ? <div className="wide"><button className="btn">{rec ? "Save changes" : "Add"}</button></div>
-          : <p className="wide muted small">Read-only. <Link href="/admin/login">Unlock admin</Link> to edit.</p>}
+        <label className="wide">{cfg.notesLabel || "Notes"}<textarea name="notes" rows={5} defaultValue={rec?.notes} /></label>
+        {admin ? <div className="wide"><button className="btn">{rec ? "Save changes" : `Add ${lower(cfg.singular)}`}</button></div>
+          : <p className="wide muted small">Only admins can edit this. <Link href="/admin/login">Log in as admin</Link> to make changes.</p>}
       </fieldset>
     </form>
+  );
+}
+
+// Read-only view for members: filled-in fields that aren't internal, links clickable, then the description.
+// skip: fields shown elsewhere on the page (e.g. the deal's claim block).
+export function RecordView({ cfg, rec, skip = [] }: { cfg: TypeCfg; rec: Rec; skip?: string[] }) {
+  const fields = cfg.fields.filter((f) => !f.internal && !skip.includes(f.key) && rec.data[f.key]);
+  const notes = cfg.internalNotes ? "" : rec.notes;
+  if (fields.length === 0 && !notes) return null;
+  return (
+    <section className="card">
+      {fields.length > 0 && <div className="two">
+        {fields.map((f) => <p key={f.key}><span className="eyebrow">{f.label}</span><br />
+          {f.kind === "url" && isHttp(rec.data[f.key]) ? <a href={rec.data[f.key]} target="_blank" rel="noreferrer">{rec.data[f.key].replace(/^https?:\/\/(www\.)?/i, "")} ↗</a> : rec.data[f.key]}</p>)}
+      </div>}
+      {notes && <p className="pre">{notes}</p>}
+    </section>
   );
 }
 
@@ -66,7 +84,7 @@ export function Claim({ rec }: { rec: Rec }) {
   return (
     <div className="claim">
       <p className="eyebrow">How to claim</p>
-      <p className="pre">{rec.data.route || "Ask the E@B owner of this perk."}</p>
+      <p className="pre">{rec.data.route || "Ask an E@B exec and we'll get you set up."}</p>
       {rec.data.caveat && <p className="muted small pre">{rec.data.caveat}</p>}
     </div>
   );
@@ -80,7 +98,7 @@ export async function Mentions({ rec }: { rec: Rec }) {
     .filter((r: Rec) => admin || memberCanOpen(r)).slice(0, 12);
   if (related.length === 0) return null;
   return (
-    <section className="card"><h2>Mentioned elsewhere</h2>
+    <section className="card"><h2>Related</h2>
       {related.map((r) => <p key={r.id}><Link href={recordHref(r.type, r.id)}>{r.name}</Link> <span className="muted">{bySlug(r.type)?.singular}</span></p>)}
     </section>
   );

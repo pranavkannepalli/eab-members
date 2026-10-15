@@ -24,7 +24,7 @@ export function Answers({ postId, ask, initial, admin, viewer, profiles }: {
     setError("");
     const r = await fetch(url, { ...init, headers: { "content-type": "application/json" } });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { setError(j.error || "Something went wrong"); return null; }
+    if (!r.ok) { setError(j.error || "Something went wrong. Try again."); return null; }
     return j;
   }
   async function submit(e: React.FormEvent) {
@@ -61,7 +61,7 @@ export function Answers({ postId, ask, initial, admin, viewer, profiles }: {
                   {a.best && <span className="bestpill">Best answer</span>}</p>
                 <p className="atext">{a.body}</p>
                 {admin && <p className="amod">
-                  {ask && <button type="button" className="textbtn" onClick={() => markBest(a)}>{a.best ? "Unmark best" : "Mark best"}</button>}
+                  {ask && <button type="button" className="textbtn" onClick={() => markBest(a)}>{a.best ? "Remove best answer" : "Mark best answer"}</button>}
                   <button type="button" className="textbtn" onClick={() => hide(a)}>Hide</button>
                 </p>}
               </div>
@@ -71,7 +71,7 @@ export function Answers({ postId, ask, initial, admin, viewer, profiles }: {
             <form className="answerbox" onSubmit={submit}>
               <Face name={viewer} size={28} />
               <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={ask ? "Write an answer…" : "Write a reply…"} aria-label={`Write ${noun === "answer" ? "an answer" : "a reply"}`} />
-              <button className="btn" disabled={busy || !text.trim()}>{busy ? "…" : ask ? "Answer" : "Reply"}</button>
+              <button className="btn" disabled={busy || !text.trim()}>{busy ? "Posting…" : ask ? "Answer" : "Reply"}</button>
             </form>
           ) : <p className="small"><button type="button" className="textbtn" onClick={requestSignIn}>Sign in to {noun} →</button></p>}
           {error && <p className="err small">{error}</p>}

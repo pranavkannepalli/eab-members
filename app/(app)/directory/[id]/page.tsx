@@ -30,7 +30,7 @@ export default async function Profile({ params }: { params: Promise<{ id: string
         <Face name={m.name} src={m.data.avatar} size={104} />
         <div>
           <h1>{m.name}</h1>
-          <p className="row">{m.data.role && <span>{m.data.role}</span>}<span className={`pill s-${m.status}`}>{m.status}</span></p>
+          <p className="row">{m.data.role && <span>{m.data.role}</span>}{(admin || m.status === "Exec") && <span className={`pill s-${m.status}`}>{m.status}</span>}</p>
           {meta && <p className="muted">{meta}</p>}
           {expertise.length > 0 && <p className="tags">{expertise.map((t) => <span key={t} className="tag">{t}</span>)}</p>}
           <p className="plinks">
@@ -54,19 +54,19 @@ export default async function Profile({ params }: { params: Promise<{ id: string
         ))}
       </section>
       <section className="card">
-        <h3 className="eyebrow">Intros they can make</h3>
-        {intros.length === 0 && <p className="muted small">None recorded.</p>}
+        <h3 className="eyebrow">Can introduce you to</h3>
+        {intros.length === 0 && <p className="muted small">No intros listed yet.</p>}
         {intros.map((p) => (
           <p key={p.id} className="plist">
             {admin ? <Link href={`/intros/${p.id}`}>{p.name}</Link> : <b>{p.name}</b>}
             <span className="pmeta">{[p.data.title, p.data.org !== p.name && p.data.org].filter(Boolean).join(" · ")}</span>
-            <span className={`pill s-${p.status.replace(/\W/g, "")}`}>{p.status}</span>
+            {admin && <span className={`pill s-${p.status.replace(/\W/g, "")}`}>{p.status}</span>}
           </p>
         ))}
       </section>
       <section className="card">
-        <h3 className="eyebrow">Perks claimed</h3>
-        {claimed.length === 0 && <p className="muted small">{m.data.email ? "None yet." : "Add an email to this member to track claims."}</p>}
+        <h3 className="eyebrow">Deals claimed</h3>
+        {claimed.length === 0 && <p className="muted small">{m.data.email || !admin ? "No deals claimed yet." : "Add an email to this member to track claims."}</p>}
         {claimed.map((d) => <p key={d.id} className="plist"><Link href={`/deals/${d.id}`}>{d.name}</Link><span className="pmeta">{d.data.value}</span></p>)}
       </section>
       {admin && (

@@ -39,7 +39,7 @@ export default async function Home() {
         {admin && <Composer author={me?.name || "E@B Exec"} categories={categories} />}
         {open.length > 0 && (
           <nav className="stillopen" aria-label="Unanswered questions">
-            <span className="eyebrow">Still open</span>
+            <span className="eyebrow">Waiting for an answer</span>
             {open.map((u) => <a key={u.id} href={`#post-${u.id}`}>{u.name}</a>)}
           </nav>
         )}
@@ -53,8 +53,8 @@ export default async function Home() {
       </section>
       <aside className="rail">
         <section className="card">
-          <h3>Upcoming events <Link href="/events">all →</Link></h3>
-          {events.length === 0 && <p className="muted small">Nothing scheduled yet.</p>}
+          <h3>Upcoming events <Link href="/events">See all →</Link></h3>
+          {events.length === 0 && <p className="muted small">No events on the calendar yet.</p>}
           {events.map((e) => (
             <div key={e.id} className="ev">
               <DateBlock date={e.data.date} />
@@ -68,8 +68,8 @@ export default async function Home() {
           ))}
         </section>
         <section className="card">
-          <h3>Perks <Link href="/deals">all →</Link></h3>
-          {perks.length === 0 && <p className="muted small">No perks confirmed yet.</p>}
+          <h3>Deals <Link href="/deals">See all →</Link></h3>
+          {perks.length === 0 && <p className="muted small">No deals yet. Check back soon.</p>}
           {perks.map((d) => (
             <div key={d.id} className="perk">
               <div><Link href={`/deals/${d.id}`} className="n">{d.name}</Link>{d.data.value && <span className="v">{d.data.value}</span>}
@@ -79,7 +79,7 @@ export default async function Home() {
           ))}
         </section>
         <section className="card">
-          <h3>New to E@B <Link href="/directory">directory →</Link></h3>
+          <h3>New to E@B <Link href="/directory">Meet everyone →</Link></h3>
           {newest.length === 0 && <p className="muted small">No members yet.</p>}
           {newest.map((m) => (
             <div key={m.id} className="mem">

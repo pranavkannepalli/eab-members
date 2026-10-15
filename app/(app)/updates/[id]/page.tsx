@@ -22,8 +22,8 @@ export default async function Post({ params }: { params: Promise<{ id: string }>
   const status = (s: string, label: string) => <form action={setStatus.bind(null, "updates", u.id, s)}><button className="btn ghost small">{label}</button></form>;
   return (
     <section className="stream postpage">
-      <p className="small"><Link href="/">← Feed</Link></p>
-      {u.status === "Archived" && <p className="notice">Archived: hidden from the feed.</p>}
+      <p className="small"><Link href="/">← Back to feed</Link></p>
+      {u.status === "Archived" && <p className="notice">This post is archived and no longer shows on the feed.</p>}
       <PostCard u={u} members={members} ids={ids} thread={thread(u)} />
       {admin && (
         <>
