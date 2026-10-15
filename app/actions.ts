@@ -43,6 +43,17 @@ export async function promoteProspect(id: number) {
   redirect(`/crm/deals/${id}`);
 }
 
+// Home feed composer. Body goes in notes, like every other "updates" record.
+export async function postUpdate(fd: FormData) {
+  await requireAdmin();
+  const get = (k: string) => String(fd.get(k) || "").trim();
+  const name = get("name");
+  if (!name) throw new Error("Title is required");
+  const data = { author: get("author"), date: get("date"), category: get("category"), link: get("link") };
+  await query("insert into records(type,name,status,data,notes) values('updates',$1,$2,$3,$4)", [name, get("status") === "Pinned" ? "Pinned" : "Open", JSON.stringify(data), String(fd.get("notes") || "").trim()]);
+  revalidatePath("/");
+}
+
 export async function adminLogin(fd: FormData) {
   if (!checkPassword(String(fd.get("password") || ""))) redirect("/admin/login?error=1");
   await setAdminCookie();

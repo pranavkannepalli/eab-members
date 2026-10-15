@@ -1,5 +1,5 @@
 # E@B Members site (members.entrepreneursatberkeley.com)
-One app: sign in with Berkeley Google, land on a bookcase of tools. CRM is the first shelf (/crm); Finances (/finances) is reserved. Admin password on top for managing data.
+One app: sign in with Berkeley Google, land on the member feed (club updates, upcoming events). CRM at /crm, global search at /crm/search. Admin password on top for managing data.
 
 
 Simple CRM for Entrepreneurs at Berkeley: members, alumni, deals, VC partners, and warm-intro contacts (who at E@B knows an important person). Next.js 15 (App Router) + Postgres + Auth.js Google sign-in.
@@ -18,6 +18,8 @@ No env needed locally: it uses an embedded Postgres (PGlite) in ./.data and seed
 
 ## Notes
 - Admin: /admin is protected by the ADMIN_PASSWORD env var. Admin mode is the only way to add, edit, delete, promote or import. Without Google configured, the admin password is the only way into the site.
+- Reserved areas: Finances (budget, reimbursements, sponsor money, dues), a resume book and a perks directory are planned but not built. They will use the same login and admin password; add them as new record types in `lib/schema.ts` or new routes when scoped.
+- Feed: Updates and Events are ordinary record types (body/description in notes). Admins post from the home page composer or the CRM tabs.
 - Prospects vs Deals: Deals are confirmed only. Outreach targets live in Prospects; an admin promotes one to a Deal explicitly.
 - Access: Google sign-in, members only. A person gets in if a Member record (status Active or Exec) has their Google email. Checked on every page load, so setting a member to Inactive or deleting them locks them out. `ALLOWED_EMAILS` is only a bootstrap list for the first admins. The seeded members have no emails yet: add them in /admin (or CSV import) before inviting anyone.
 - Domain: add `members` CNAME in Wix DNS to Vercel, add the domain in Vercel, and use `https://members.entrepreneursatberkeley.com/api/auth/callback/google` as the Google redirect URI.
