@@ -102,6 +102,17 @@ export const TYPES: TypeCfg[] = [
     ],
     columns: ["date", "location", "category"], filterField: "category",
   },
+  {
+    // Description lives in the record's notes.
+    slug: "resources", label: "Resources", singular: "Resource", blurb: "Guides, tools, templates and links the club keeps.",
+    statuses: ["Published", "Draft"],
+    fields: [
+      { key: "url", label: "URL", kind: "url" },
+      { key: "category", label: "Category", kind: "select", options: ["Guide", "Tool", "Template", "Document", "Link", "Media"] },
+      { key: "owner", label: "Maintained by" },
+    ],
+    columns: ["category", "owner", "url"], filterField: "category",
+  },
 ];
 
 export const bySlug = (s: string) => TYPES.find((t) => t.slug === s);
