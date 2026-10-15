@@ -12,12 +12,13 @@ export async function Nav({ admin }: { admin?: boolean }) {
     <header className="top">
       <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley <b>Members</b></span></Link>
       <nav>
-        <Link href="/perks">Perks</Link>
-        <Link href="/events">Events</Link>
         <Link href="/directory">Directory</Link>
+        <Link href="/events">Events</Link>
+        <Link href="/perks">Perks</Link>
         <Link href="/resources">Resources</Link>
-        <Link href="/finances">Finances</Link>
-        <Link href="/crm">CRM</Link>
+        {/* Internal tools: linked for admins only (the pages themselves stay reachable by URL). */}
+        {a && <Link href="/crm">CRM</Link>}
+        {a && <Link href="/finances">Finances</Link>}
         <form action="/crm/search" method="get" className="navsearch"><input type="search" name="q" placeholder="Search" aria-label="Search all records" /></form>
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>

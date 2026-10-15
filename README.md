@@ -10,7 +10,7 @@ Page map:
 - `/finances` budget, spending, sponsor money and reimbursements (visible to all members)
 - `/crm` every record type (admin edits here), `/crm/search` global search results, `/admin` import and cleanup
 
-One navbar: the top bar holds the module links, CRM, a built-in search input (Enter searches every record type) and Admin. The CRM has no second tab bar; its dashboard cards link to each type.
+One navbar: the top bar holds Directory, Events, Perks and Resources (plus CRM and Finances for admins), a built-in search input (Enter searches every record type) and Admin. The CRM has no second tab bar; its dashboard cards link to each type.
 
 
 Simple CRM for Entrepreneurs at Berkeley: members, alumni, deals, VC partners, and warm-intro contacts (who at E@B knows an important person). Next.js 15 (App Router) + Postgres + Auth.js Google sign-in.
