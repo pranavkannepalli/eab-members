@@ -1,5 +1,5 @@
 // Load seed/*.json into the database (replaces rows of each loaded type).
-//   node scripts/seed-load.mjs                 members, alumni, events, updates, resources + prospects (re-derived)
+//   node scripts/seed-load.mjs                 members, alumni, events, updates, resources, finance + prospects (re-derived)
 //   node scripts/seed-load.mjs --type=members  one type only
 //   node scripts/seed-load.mjs --dry-run       print counts, write nothing
 // Uses DATABASE_URL (env or .env) for Postgres, else the local PGlite DB in LOCAL_DB_DIR or ./.data/pg.

@@ -113,6 +113,16 @@ export const TYPES: TypeCfg[] = [
     ],
     columns: ["category", "owner", "url"], filterField: "category",
   },
+  {
+    slug: "finance", label: "Finances", singular: "Finance entry", blurb: "Club budget, spending, sponsor money and reimbursements.",
+    statuses: ["Planned", "Committed", "Paid", "Reimbursed"],
+    fields: [
+      { key: "kind", label: "Kind", kind: "select", options: ["Budget line", "Expense", "Sponsorship", "Reimbursement"] },
+      { key: "amount", label: "Amount (e.g. $500)" }, { key: "period", label: "Period / date", kind: "date" },
+      { key: "counterparty", label: "Vendor / recipient / funder" },
+    ],
+    columns: ["kind", "amount", "period", "counterparty"], filterField: "kind",
+  },
 ];
 
 export const bySlug = (s: string) => TYPES.find((t) => t.slug === s);

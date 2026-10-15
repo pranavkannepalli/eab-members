@@ -52,3 +52,4 @@ fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{back
 .avatar{flex:none;border-radius:50%;object-fit:cover}.avatar.initials{display:grid;place-items:center;background:var(--soft);color:var(--blue);font-weight:500}
 .profile{display:flex;gap:24px;align-items:center;margin:8px 0 16px}.profile h1{margin:0}.profile .row{align-items:center;margin:6px 0}
 @media(max-width:800px){.people{grid-template-columns:1fr}}
+.s-Paid,.s-Reimbursed,.s-Published{background:#d9f2e3;color:#14633a}.s-Draft,.s-Planned{background:#eef0f3;color:#4a5565}
