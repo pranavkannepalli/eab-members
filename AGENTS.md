@@ -12,7 +12,7 @@ Stack: Next.js 15 App Router, React 19, NextAuth v5 beta (Google sign-in, member
 ## Pages
 Every page reads the same `records` table. Member pages are read-only; editing happens in `/crm` (admin) or the API.
 
-There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Directory, Events, Perks, Resources (CRM and Finances only when the admin cookie is set; the pages stay reachable by URL), a built-in search input (plain GET form to `/crm/search?q=`) and the Admin link. The CRM has no tab bar of its own: `/crm` is a grid of per-type cards, list pages link back with "← CRM", detail pages link back to their list.
+There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Directory, Events, Perks, Resources (CRM and Finances only when the admin cookie is set; the pages stay reachable by URL), a built-in search input (plain GET form to `/crm/search?q=`) and the Admin link. Inside the CRM, one row of type tabs (with counts) sits above the list pages: `/crm` lands on the Members table, `/crm/<type>` shows that type, and the old overview dashboard is at `/crm/overview` (linked from the list head). Detail pages link back to their list.
 
 | Route | Module | Data |
 |---|---|---|
@@ -23,7 +23,8 @@ There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Direct
 | `/resources` | Resources grouped by category | `resources` with status Published (drafts only in CRM) |
 | `/finances` | Finances: Budget / Spent / Sponsor money / Reimbursed totals + all entries | `finance` |
 | `/crm/members/<id>` | Member profile: building, expertise, posts, intros they can make, perks claimed; admins edit here | `members`, `updates`, `pocs` |
-| `/crm`, `/crm/<type>`, `/crm/<type>/<id>` | CRM: lists, filters, edit forms (admin) | every type |
+| `/crm`, `/crm/<type>`, `/crm/<type>/<id>` | CRM: type tabs + lists with filters (`/crm` = Members), edit forms (admin) | every type |
+| `/crm/overview` | CRM dashboard: counts, next steps due, recently updated | every type |
 | `/crm/search` | Search results for the top-bar search input (no form of its own) | every type |
 | `/admin` | Admin: CSV import, clear a tab | every type |
 
@@ -115,7 +116,7 @@ Dates are `YYYY-MM-DD`. Statuses and select options must match `lib/schema.ts`. 
 - Site access is `isMemberEmail` (`lib/access.ts`): a Members record with status Active or Exec and a matching email, or an address in `ALLOWED_EMAILS`. Deactivating or deleting the member locks them out.
 - Intro posts (category Intro) name `member_a` and `member_b`. An admin's "Request intro" creates a Warm intro (`pocs`: org = member_b, E@B contact = member_a) unless a non-Dropped one exists; then the post shows "Intro made".
 - Prospects are unconfirmed. Only an admin promotes one to a Deal.
-- Navigation: one top nav: Directory, Events, Perks, Resources, CRM and Finances (admins only), a search input, Admin. No CRM tab bar or other second nav. Do not add more nav surfaces.
+- Navigation: one top nav: Directory, Events, Perks, Resources, CRM and Finances (admins only), a search input, Admin. Inside `/crm` list pages only, the type tab bar. No other second nav. Do not add more nav surfaces.
 - Perks are not a type: they are `deals` with status Confirmed or Active. Confirm a deal (or promote a prospect) to publish a perk.
 - No new npm dependencies without the maintainer's approval.
 
