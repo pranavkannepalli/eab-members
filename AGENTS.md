@@ -16,7 +16,7 @@ There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Direct
 
 | Route | Module | Data |
 |---|---|---|
-| `/` | Feed: updates, upcoming-events rail, Explore links | `updates`, `events` |
+| `/` | Feed: composer (admin), typed post cards, rail with upcoming events, perks, newest members | `updates`, `events`, `deals`, `members` |
 | `/perks`, `/perks/<id>` | Perks: how to claim each confirmed deal | `deals` with status Confirmed or Active |
 | `/events` | Events: upcoming (date chip, RSVP) and last 12 past | `events` (Upcoming / Past) |
 | `/directory`, `/directory/<id>` | Directory: member grid and profiles | `members` with status Active or Exec |
@@ -82,7 +82,7 @@ Shapes (every key optional except `name`; values are strings; unknown keys are s
     seed/members.json    [{ "name","status","role","email","year","major","cohort","company","linkedin","avatar","notes" }]
     seed/alumni.json     [{ "name","status","company","title","email","grad_year","cohort","raised","can_help","linkedin","notes" }]
     seed/events.json     [{ "name","status","date","time","location","link","rsvp","category","notes" }]
-    seed/updates.json    [{ "name","status","author","date","category","link","notes" }]
+    seed/updates.json    [{ "name","status","author","date","category","link","notes" }]   # category Ask|Intro|Update|Announcement|...; name is the title or the question
     seed/resources.json  [{ "name","status","url","category","owner","notes" }]          # status Published|Draft; notes = description
     seed/finance.json    [{ "name","status","kind","amount","period","counterparty","notes" }]  # amount is text, e.g. "$500"; period YYYY-MM-DD
     seed/deals.json, seed/recruit.json   outreach research; turned into Prospects (lib/seed.mjs). Do not reshape.
@@ -95,7 +95,7 @@ Dates are `YYYY-MM-DD`. Statuses and select options must match `lib/schema.ts`. 
 - Writes are admin-only: the admin cookie in the UI (`requireAdmin` in `app/actions.ts`), the bearer token in the API.
 - Site access is `isMemberEmail` (`lib/access.ts`): a Members record with status Active or Exec and a matching email, or an address in `ALLOWED_EMAILS`. Deactivating or deleting the member locks them out.
 - Prospects are unconfirmed. Only an admin promotes one to a Deal.
-- Navigation: one top nav: Directory, Events, Perks, Resources, CRM and Finances (admins only), a search input, Admin. No CRM tab bar or other second nav. The home page's "Explore" line is plain text links, not a second nav. Do not add more nav surfaces.
+- Navigation: one top nav: Directory, Events, Perks, Resources, CRM and Finances (admins only), a search input, Admin. No CRM tab bar or other second nav. Do not add more nav surfaces.
 - Perks are not a type: they are `deals` with status Confirmed or Active. Confirm a deal (or promote a prospect) to publish a perk.
 - No new npm dependencies without the maintainer's approval.
 

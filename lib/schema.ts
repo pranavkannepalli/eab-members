@@ -86,7 +86,7 @@ export const TYPES: TypeCfg[] = [
     statuses: ["Pinned", "Open", "Archived"], defaultStatus: "Open",
     fields: [
       { key: "author", label: "Author" }, { key: "date", label: "Date", kind: "date" },
-      { key: "category", label: "Category", kind: "select", options: ["Announcement", "Win", "Recruiting", "Event", "Other"] },
+      { key: "category", label: "Category", kind: "select", options: ["Announcement", "Ask", "Intro", "Update", "Win", "Recruiting", "Event", "Other"] },
       { key: "link", label: "Link", kind: "url" },
     ],
     columns: ["author", "date", "category"], filterField: "category",

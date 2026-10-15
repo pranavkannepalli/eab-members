@@ -2,7 +2,7 @@
 One app: sign in with Berkeley Google, land on the member feed (club updates, upcoming events). Admin password on top for managing data.
 
 Page map:
-- `/` member feed (updates, upcoming events, Explore links)
+- `/` member feed: composer (admin), typed posts (Ask, Intro, Update, Announcement...), rail with upcoming events, perks and newest members
 - `/perks` confirmed deals with how to claim them; `/perks/<id>` one perk
 - `/events` upcoming and past events with RSVP links
 - `/directory` active members; `/directory/<id>` member profile
@@ -36,6 +36,6 @@ No env needed locally: it uses an embedded Postgres (PGlite) in ./.data and seed
 - Domain: add `members` CNAME in Wix DNS to Vercel, add the domain in Vercel, and use `https://members.entrepreneursatberkeley.com/api/auth/callback/google` as the Google redirect URI.
 - (old note) Dev login is disabled when NODE_ENV=production.
 - Schema: one `records` table (type, name, status, data jsonb, notes). Fields per type live in `lib/schema.ts`; add a field there and it shows up in forms, lists and CSV export.
-- Data: real rosters live in `seed/*.json` (members, alumni, events, updates, resources, finance; prospects are derived from `seed/deals.json` + `seed/recruit.json`). Load them with `npm run seed:load` (`--type=members` for one type, `--dry-run` to preview), or let a fresh local DB auto-seed on first request. Never hand-edit the database for onboarding. The current seed is placeholder: 9 members/exec from the public site (no emails yet), 6 alumni companies (founder names TBD), 40 Prospects (unconfirmed targets from the outreach sheets; Deals starts empty). No VC partners, warm intros, events, updates, resources or finance entries are seeded: nobody's real relationships, links or dollar amounts were invented. Member photos (`avatar`) and event RSVP links (`rsvp`) are optional URL fields.
+- Data: real rosters live in `seed/*.json` (members, alumni, events, updates, resources, finance; prospects are derived from `seed/deals.json` + `seed/recruit.json`). Load them with `npm run seed:load` (`--type=members` for one type, `--dry-run` to preview), or let a fresh local DB auto-seed on first request. Never hand-edit the database for onboarding. The current seed is placeholder: 9 members/exec from the public site (no emails yet), 6 alumni companies (founder names TBD), 40 Prospects (unconfirmed targets from the outreach sheets; Deals starts empty). 4 sample feed posts (`seed/updates.json`) show each post type and can be deleted once real posts exist. No VC partners, warm intros, events, resources or finance entries are seeded: nobody's real relationships, links or dollar amounts were invented. Member photos (`avatar`) and event RSVP links (`rsvp`) are optional URL fields.
 - Agents / API: see AGENTS.md. `/api/records` is a JSON API (list, get, create, update, delete) authenticated with `Authorization: Bearer <ADMIN_PASSWORD>`.
 - Transfer: standard Postgres + Next.js, no vendor lock-in. Export CSV per tab at /api/export/<type>.
