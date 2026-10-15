@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TypeCfg, TYPES } from "@/lib/schema";
+import { TypeCfg, TYPES, defaultStatus } from "@/lib/schema";
 import { Rec } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
 import { auth } from "@/auth";
@@ -25,7 +25,7 @@ export async function RecordForm({ cfg, rec, action }: { cfg: TypeCfg; rec?: Rec
     <form action={action} className="card form">
       <fieldset disabled={!admin}>
         <label>Name<input name="name" defaultValue={rec?.name} required /></label>
-        <label>Status<select name="status" defaultValue={rec?.status || cfg.statuses[0]}>{cfg.statuses.map((s) => <option key={s}>{s}</option>)}</select></label>
+        <label>Status<select name="status" defaultValue={rec?.status || defaultStatus(cfg)}>{cfg.statuses.map((s) => <option key={s}>{s}</option>)}</select></label>
         {cfg.fields.map((f) => (
           <label key={f.key}>{f.label}
             {f.kind === "select" ? (

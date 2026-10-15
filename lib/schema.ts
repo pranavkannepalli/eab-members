@@ -3,6 +3,7 @@ export type TypeCfg = {
   slug: string; label: string; singular: string; blurb: string;
   statuses: string[]; fields: Field[]; columns: string[]; // columns: data keys shown in list
   filterField?: string; // data key (select) to filter on besides status
+  defaultStatus?: string; // status for new records when none is given (else statuses[0])
 };
 
 export const TYPES: TypeCfg[] = [
@@ -81,7 +82,7 @@ export const TYPES: TypeCfg[] = [
   {
     // Post body lives in the record's notes.
     slug: "updates", label: "Updates", singular: "Update", blurb: "Club announcements, wins and news on the member feed.",
-    statuses: ["Pinned", "Open", "Archived"],
+    statuses: ["Pinned", "Open", "Archived"], defaultStatus: "Open",
     fields: [
       { key: "author", label: "Author" }, { key: "date", label: "Date", kind: "date" },
       { key: "category", label: "Category", kind: "select", options: ["Announcement", "Win", "Recruiting", "Event", "Other"] },
@@ -103,3 +104,4 @@ export const TYPES: TypeCfg[] = [
 ];
 
 export const bySlug = (s: string) => TYPES.find((t) => t.slug === s);
+export const defaultStatus = (t: TypeCfg) => t.defaultStatus ?? t.statuses[0];
