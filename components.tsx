@@ -11,7 +11,8 @@ export async function Nav({ admin }: { admin?: boolean }) {
     <header className="top">
       <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley <b>Members</b></span></Link>
       <nav>
-        <Link href="/">Bookcase</Link>
+        <Link href="/crm">CRM</Link>
+        <Link href="/crm/search">Search</Link>
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>
     </header>
@@ -48,7 +49,6 @@ export function CrmTabs() {
   return (
     <div className="tabs">
       {TYPES.map((t) => <Link key={t.slug} href={`/crm/${t.slug}`}>{t.label}</Link>)}
-      <form action="/crm/search"><input name="q" placeholder="Search CRM" /></form>
     </div>
   );
 }
