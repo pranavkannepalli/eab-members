@@ -2,19 +2,23 @@ import Link from "next/link";
 import { query, Rec } from "@/lib/db";
 import { Avatar } from "@/components";
 import { tags } from "@/lib/feed";
+import { isAdmin } from "@/lib/admin";
 export const dynamic = "force-dynamic";
 
 export default async function Directory() {
   const members: Rec[] = await query("select * from records where type='members' and status in ('Active','Exec') order by name");
+  const admin = await isAdmin();
+  // Admins also need the members the grid leaves out (Pending, Inactive) to edit or reactivate them.
+  const others: Rec[] = admin ? await query("select * from records where type='members' and status not in ('Active','Exec') order by name") : [];
   return (
     <>
-      <p className="eyebrow">E@B Members</p>
-      <h1>Directory</h1>
-      <p className="muted">{members.length} active members and exec.</p>
+      <div className="head"><div><p className="eyebrow">E@B Members</p><h1>Directory</h1>
+        <p className="muted">{members.length} active members and exec.</p></div>
+        {admin && <div><a className="btn ghost" href="/api/export/members">Export CSV</a> <Link className="btn" href="/directory/new">+ Add member</Link></div>}</div>
       {members.length === 0 && <div className="card"><p className="muted">No active members yet.</p></div>}
       <div className="people">
         {members.map((m) => (
-          <Link key={m.id} href={`/crm/members/${m.id}`} className="card person">
+          <Link key={m.id} href={`/directory/${m.id}`} className="card person">
             <Avatar rec={m} />
             <div>
               <b>{m.name}</b>
@@ -26,6 +30,11 @@ export default async function Directory() {
           </Link>
         ))}
       </div>
+      {others.length > 0 && (
+        <section className="card"><p className="eyebrow">Not in the directory (admins only)</p>
+          {others.map((m) => <p key={m.id}><Link href={`/directory/${m.id}`}>{m.name}</Link> <span className={`pill s-${m.status}`}>{m.status}</span></p>)}
+        </section>
+      )}
     </>
   );
 }

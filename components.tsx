@@ -6,6 +6,7 @@ import { isAdmin } from "@/lib/admin";
 import { auth } from "@/auth";
 import { getIdentity, memberByEmail, notifications } from "@/lib/identity";
 import { IdentityBar } from "@/ui/identity";
+import { recordHref, memberCanOpen } from "@/lib/routes";
 
 export async function Nav({ admin }: { admin?: boolean }) {
   const a = admin ?? (await isAdmin());
@@ -18,13 +19,15 @@ export async function Nav({ admin }: { admin?: boolean }) {
       <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley <b>Members</b></span></Link>
       <nav>
         <Link href="/directory">Directory</Link>
+        <Link href="/deals">Deals</Link>
         <Link href="/events">Events</Link>
-        <Link href="/perks">Perks</Link>
         <Link href="/resources">Resources</Link>
-        {/* Internal tools: linked for admins only (the pages themselves stay reachable by URL). */}
-        {a && <Link href="/crm">CRM</Link>}
+        {/* Admin-only pages. Finances stays reachable by URL for members; alumni, VCs and intros redirect them away. */}
+        {a && <Link href="/alumni">Alumni</Link>}
+        {a && <Link href="/vcs">VCs</Link>}
+        {a && <Link href="/intros">Intros</Link>}
         {a && <Link href="/finances">Finances</Link>}
-        <form action="/crm/search" method="get" className="navsearch"><input type="search" name="q" placeholder="Search" aria-label="Search all records" /></form>
+        <form action="/search" method="get" className="navsearch"><input type="search" name="q" placeholder="Search" aria-label="Search all records" /></form>
         <IdentityBar me={me} member={member} notices={notices} />
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>
@@ -70,12 +73,15 @@ export function Claim({ rec }: { rec: Rec }) {
 }
 
 // Cross-links: other records that mention this record's name (e.g. a PoC named on a VC or deal).
+// Members only see records they can open.
 export async function Mentions({ rec }: { rec: Rec }) {
-  const related: Rec[] = await query("select * from records where id<>$1 and (data::text ilike $2 or notes ilike $2) order by type, name limit 12", [rec.id, `%${rec.name}%`]);
+  const admin = await isAdmin();
+  const related: Rec[] = (await query("select * from records where id<>$1 and (data::text ilike $2 or notes ilike $2) order by type, name limit 40", [rec.id, `%${rec.name}%`]))
+    .filter((r: Rec) => admin || memberCanOpen(r)).slice(0, 12);
   if (related.length === 0) return null;
   return (
     <section className="card"><h2>Mentioned elsewhere</h2>
-      {related.map((r) => <p key={r.id}><Link href={`/crm/${r.type}/${r.id}`}>{r.name}</Link> <span className="muted">{bySlug(r.type)?.singular}</span></p>)}
+      {related.map((r) => <p key={r.id}><Link href={recordHref(r.type, r.id)}>{r.name}</Link> <span className="muted">{bySlug(r.type)?.singular}</span></p>)}
     </section>
   );
 }

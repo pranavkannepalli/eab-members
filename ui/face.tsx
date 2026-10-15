@@ -12,5 +12,5 @@ export function Face({ name, src, size = 40, href }: { name: string; src?: strin
 /** Where a name links: their profile when they are a member, else a search for them. */
 export const personHref = (name: string, memberIds: Map<string, number>) => {
   const id = memberIds.get(name.trim().toLowerCase());
-  return id ? `/crm/members/${id}` : `/crm/search?q=${encodeURIComponent(name)}`;
+  return id ? `/directory/${id}` : `/search?q=${encodeURIComponent(name)}`;
 };

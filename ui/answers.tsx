@@ -17,7 +17,7 @@ export function Answers({ postId, ask, initial, admin, viewer, profiles }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const noun = ask ? "answer" : "reply";
-  const href = (name: string) => profiles[name.trim().toLowerCase()] || `/crm/search?q=${encodeURIComponent(name)}`;
+  const href = (name: string) => profiles[name.trim().toLowerCase()] || `/search?q=${encodeURIComponent(name)}`;
   const sorted = [...list].sort((a, b) => Number(b.best) - Number(a.best) || a.created_at.localeCompare(b.created_at));
 
   async function call(url: string, init: RequestInit) {

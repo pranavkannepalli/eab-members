@@ -25,7 +25,7 @@ export default async function Finances() {
   return (
     <>
       <div className="head"><div><p className="eyebrow">E@B Members</p><h1>Finances</h1></div>
-        {admin && <div><a className="btn ghost" href="/api/export/finance">Export CSV</a> <Link className="btn" href="/crm/finance/new">+ Add entry</Link></div>}</div>
+        {admin && <div><a className="btn ghost" href="/api/export/finance">Export CSV</a> <Link className="btn" href="/finances/new">+ Add entry</Link></div>}</div>
       <div className="grid four">
         {totals.map((t) => (
           <div key={t.label} className="card stat"><b>{money(t.sum)}</b><span>{t.label}</span>
@@ -38,7 +38,7 @@ export default async function Finances() {
           {rows.map((r) => (
             <tr key={r.id}>
               <td>{r.data.kind && <span className="pill">{r.data.kind}</span>}</td>
-              <td><Link href={`/crm/finance/${r.id}`}>{r.name}</Link></td>
+              <td><Link href={`/finances/${r.id}`}>{r.name}</Link></td>
               <td>{r.data.amount}</td><td>{r.data.period}</td><td>{r.data.counterparty}</td>
               <td>{r.status && <span className={`pill s-${r.status}`}>{r.status}</span>}</td>
               <td className="muted small">{r.notes.length > 80 ? r.notes.slice(0, 80) + "…" : r.notes}</td>

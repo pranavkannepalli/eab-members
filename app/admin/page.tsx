@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
 import { query } from "@/lib/db";
 import { TYPES } from "@/lib/schema";
+import { homeOf, newHref } from "@/lib/routes";
 import { importCsv, clearType, adminLogout } from "@/app/actions";
 import { Nav } from "@/components";
 export const dynamic = "force-dynamic";
@@ -15,14 +16,14 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
   return (
     <div className="page"><Nav admin />
       <main>
-        <div className="head"><div><h1>Admin</h1><p className="muted">Manage what is on this site. Admin mode lets you add, edit, delete and promote entries everywhere.</p></div>
+        <div className="head"><div><h1>Admin</h1><p className="muted">Manage what is on this site. Admin mode lets you add, edit and delete entries on every page.</p></div>
           <form action={adminLogout}><button className="btn ghost">Lock</button></form></div>
         {msg && <p className="notice">{msg}</p>}
-        <p className="notice">Site access: {withEmail} of {total} members can sign in (Active/Exec with an email on file). Add emails on the <Link href="/crm/members">Members</Link> records to let people in.</p>
+        <p className="notice">Site access: {withEmail} of {total} members can sign in (Active/Exec with an email on file). Add emails on the <Link href="/directory">Members</Link> records to let people in.</p>
         <table><thead><tr><th>Tab</th><th>Entries</th><th>Last change</th><th></th></tr></thead><tbody>
           {TYPES.map((t) => { const c = counts.find((x) => x.type === t.slug); return (
-            <tr key={t.slug}><td><Link href={`/crm/${t.slug}`}>{t.label}</Link></td><td>{c?.n ?? 0}</td><td className="muted">{c ? new Date(c.last).toLocaleString() : "-"}</td>
-              <td><Link href={`/crm/${t.slug}/new`}>Add</Link> · <a href={`/api/export/${t.slug}`}>Export CSV</a></td></tr>); })}
+            <tr key={t.slug}><td><Link href={homeOf(t.slug)}>{t.label}</Link></td><td>{c?.n ?? 0}</td><td className="muted">{c ? new Date(c.last).toLocaleString() : "-"}</td>
+              <td><Link href={newHref(t.slug)}>Add</Link> · <a href={`/api/export/${t.slug}`}>Export CSV</a></td></tr>); })}
         </tbody></table>
         <section className="card"><h2>Import CSV</h2>
           <p className="muted small">Paste a CSV with a header row: name, status, then any field keys for that tab (use Export CSV for the exact columns), notes. Rows are added, nothing is overwritten.</p>
