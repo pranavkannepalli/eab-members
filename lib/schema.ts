@@ -3,6 +3,7 @@ export type TypeCfg = {
   slug: string; label: string; singular: string; blurb: string;
   statuses: string[]; fields: Field[]; columns: string[]; // columns: data keys shown in list
   filterField?: string; // data key (select) to filter on besides status
+  defaultStatus?: string; // status for new records when none is given (else statuses[0])
 };
 
 export const TYPES: TypeCfg[] = [
@@ -78,6 +79,29 @@ export const TYPES: TypeCfg[] = [
     ],
     columns: ["kind", "org", "eab_contact"], filterField: "kind",
   },
+  {
+    // Post body lives in the record's notes.
+    slug: "updates", label: "Updates", singular: "Update", blurb: "Club announcements, wins and news on the member feed.",
+    statuses: ["Pinned", "Open", "Archived"], defaultStatus: "Open",
+    fields: [
+      { key: "author", label: "Author" }, { key: "date", label: "Date", kind: "date" },
+      { key: "category", label: "Category", kind: "select", options: ["Announcement", "Win", "Recruiting", "Event", "Other"] },
+      { key: "link", label: "Link", kind: "url" },
+    ],
+    columns: ["author", "date", "category"], filterField: "category",
+  },
+  {
+    // Description lives in the record's notes.
+    slug: "events", label: "Events", singular: "Event", blurb: "Dinners, workshops, demo day, recruiting nights.",
+    statuses: ["Upcoming", "Past", "Cancelled"],
+    fields: [
+      { key: "date", label: "Date", kind: "date" }, { key: "time", label: "Time" }, { key: "location", label: "Location" },
+      { key: "link", label: "Link", kind: "url" },
+      { key: "category", label: "Category", kind: "select", options: ["Social", "Workshop", "Recruiting", "Demo day", "Other"] },
+    ],
+    columns: ["date", "location", "category"], filterField: "category",
+  },
 ];
 
 export const bySlug = (s: string) => TYPES.find((t) => t.slug === s);
+export const defaultStatus = (t: TypeCfg) => t.defaultStatus ?? t.statuses[0];

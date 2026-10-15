@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TypeCfg, TYPES } from "@/lib/schema";
+import { TypeCfg, TYPES, defaultStatus } from "@/lib/schema";
 import { Rec } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
 import { auth } from "@/auth";
@@ -11,7 +11,8 @@ export async function Nav({ admin }: { admin?: boolean }) {
     <header className="top">
       <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley <b>Members</b></span></Link>
       <nav>
-        <Link href="/">Bookcase</Link>
+        <Link href="/crm">CRM</Link>
+        <Link href="/crm/search">Search</Link>
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>
     </header>
@@ -24,7 +25,7 @@ export async function RecordForm({ cfg, rec, action }: { cfg: TypeCfg; rec?: Rec
     <form action={action} className="card form">
       <fieldset disabled={!admin}>
         <label>Name<input name="name" defaultValue={rec?.name} required /></label>
-        <label>Status<select name="status" defaultValue={rec?.status || cfg.statuses[0]}>{cfg.statuses.map((s) => <option key={s}>{s}</option>)}</select></label>
+        <label>Status<select name="status" defaultValue={rec?.status || defaultStatus(cfg)}>{cfg.statuses.map((s) => <option key={s}>{s}</option>)}</select></label>
         {cfg.fields.map((f) => (
           <label key={f.key}>{f.label}
             {f.kind === "select" ? (
@@ -48,7 +49,6 @@ export function CrmTabs() {
   return (
     <div className="tabs">
       {TYPES.map((t) => <Link key={t.slug} href={`/crm/${t.slug}`}>{t.label}</Link>)}
-      <form action="/crm/search"><input name="q" placeholder="Search CRM" /></form>
     </div>
   );
 }

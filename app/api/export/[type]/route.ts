@@ -1,9 +1,9 @@
 import { query } from "@/lib/db";
 import { bySlug } from "@/lib/schema";
-import { auth } from "@/auth";
+import { apiAccess } from "@/lib/api";
 
-export async function GET(_: Request, { params }: { params: Promise<{ type: string }> }) {
-  if (!(await auth())?.user?.email) return new Response("Unauthorized", { status: 401 });
+export async function GET(req: Request, { params }: { params: Promise<{ type: string }> }) {
+  if (!(await apiAccess(req))) return new Response("Unauthorized", { status: 401 });
   const { type } = await params;
   const cfg = bySlug(type);
   if (!cfg) return new Response("Not found", { status: 404 });

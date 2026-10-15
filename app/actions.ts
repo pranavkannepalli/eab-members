@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { query } from "@/lib/db";
 import { bySlug, TYPES } from "@/lib/schema";
+import { csvRecords } from "@/lib/csv";
 import { requireAdmin, checkPassword, setAdminCookie, clearAdminCookie } from "@/lib/admin";
 
 function parse(slug: string, fd: FormData) {
@@ -43,6 +44,17 @@ export async function promoteProspect(id: number) {
   redirect(`/crm/deals/${id}`);
 }
 
+// Home feed composer. Body goes in notes, like every other "updates" record.
+export async function postUpdate(fd: FormData) {
+  await requireAdmin();
+  const get = (k: string) => String(fd.get(k) || "").trim();
+  const name = get("name");
+  if (!name) throw new Error("Title is required");
+  const data = { author: get("author"), date: get("date"), category: get("category"), link: get("link") };
+  await query("insert into records(type,name,status,data,notes) values('updates',$1,$2,$3,$4)", [name, get("status") === "Pinned" ? "Pinned" : "Open", JSON.stringify(data), String(fd.get("notes") || "").trim()]);
+  revalidatePath("/");
+}
+
 export async function adminLogin(fd: FormData) {
   if (!checkPassword(String(fd.get("password") || ""))) redirect("/admin/login?error=1");
   await setAdminCookie();
@@ -50,35 +62,15 @@ export async function adminLogin(fd: FormData) {
 }
 export async function adminLogout() { await clearAdminCookie(); redirect("/login"); }
 
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = []; let row: string[] = [], cur = "", q = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
-    else if (c === '"') q = true;
-    else if (c === ",") { row.push(cur); cur = ""; }
-    else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; }
-    else cur += c;
-  }
-  if (cur || row.length) { row.push(cur); rows.push(row); }
-  return rows.filter((r) => r.some((x) => x.trim()));
-}
-
 // CSV columns: name, status, any field keys for the type, notes (same as the Export CSV).
 export async function importCsv(fd: FormData) {
   await requireAdmin();
   const slug = String(fd.get("type")); const cfg = bySlug(slug);
   if (!cfg) throw new Error("bad type");
-  const rows = parseCsv(String(fd.get("csv") || ""));
-  const head = rows.shift()?.map((h) => h.trim().toLowerCase()) ?? [];
-  let n = 0;
-  for (const r of rows) {
-    const get = (k: string) => (r[head.indexOf(k)] ?? "").trim();
-    const name = get("name"); if (!name) continue;
-    const data: Record<string, string> = {}; for (const f of cfg.fields) data[f.key] = get(f.key);
-    await query("insert into records(type,name,status,data,notes) values($1,$2,$3,$4,$5)", [slug, name, get("status") || cfg.statuses[0], JSON.stringify(data), get("notes")]);
-    n++;
-  }
+  const rows = csvRecords(cfg, String(fd.get("csv") || ""));
+  for (const r of rows)
+    await query("insert into records(type,name,status,data,notes) values($1,$2,$3,$4,$5)", [slug, r.name, r.status, JSON.stringify(r.data), r.notes]);
+  const n = rows.length;
   revalidatePath("/", "layout");
   redirect(`/admin?msg=${encodeURIComponent(`Imported ${n} into ${cfg.label}`)}`);
 }
