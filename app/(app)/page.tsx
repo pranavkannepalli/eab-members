@@ -2,12 +2,13 @@ import Link from "next/link";
 import { query, Rec } from "@/lib/db";
 import { bySlug } from "@/lib/schema";
 import { isAdmin } from "@/lib/admin";
-import { auth } from "@/auth";
 import { today, upcomingEvents, isHttp, relTime, postTime, postKind } from "@/lib/feed";
 import { Face, personHref } from "@/ui/face";
 import { Composer } from "@/ui/composer";
 import { Answers, Answer } from "@/ui/answers";
 import { requestIntro } from "@/app/actions";
+import { getIdentity, claimState, rsvpState } from "@/lib/identity";
+import { ClaimButton, RsvpButton } from "@/ui/toggles";
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -66,8 +67,10 @@ export default async function Home() {
   const ids = new Map(allMembers.map((m) => [m.name.trim().toLowerCase(), m.id]));
   const newest = allMembers.filter((m) => m.status === "Active" || m.status === "Exec").slice(0, 3);
   const admin = await isAdmin();
-  const me = (await auth())?.user;
-  const viewer = me?.name || me?.email || (admin ? "E@B Exec" : null);
+  const me = await getIdentity();
+  const claims = await claimState(perks.map((d) => d.id), me?.email);
+  const rsvps = await rsvpState(events.map((e) => e.id), me?.email);
+  const viewer = me?.name || (admin ? "E@B Exec" : null);
   const comments: (Answer & { post_id: number })[] = updates.length
     ? await query("select id, post_id, author, body, created_at, best from comments where not hidden and post_id = any($1::int[]) order by created_at, id", [updates.map((u) => u.id)])
     : [];
@@ -82,7 +85,7 @@ export default async function Home() {
   return (
     <div className="home">
       <section className="stream">
-        {admin && <Composer author={me?.name || me?.email || "E@B Exec"} categories={categories} />}
+        {admin && <Composer author={me?.name || "E@B Exec"} categories={categories} />}
         {open.length > 0 && (
           <nav className="stillopen" aria-label="Unanswered questions">
             <span className="eyebrow">Still open</span>
@@ -108,6 +111,7 @@ export default async function Home() {
                 <Link href={`/crm/events/${e.id}`} className="evname">{e.name}</Link>
                 <span className="evmeta">{[e.data.time, e.data.location].filter(Boolean).join(" · ")}</span>
                 {isHttp(e.data.link) && <a className="evmeta" href={e.data.link} target="_blank" rel="noreferrer">Details ↗</a>}
+                <RsvpButton eventId={e.id} me={rsvps.me(e.id)} count={rsvps.count(e.id)} signedIn={!!me} compact />
               </div>
             </div>
           ))}
@@ -117,8 +121,9 @@ export default async function Home() {
           {perks.length === 0 && <p className="muted small">No perks confirmed yet.</p>}
           {perks.map((d) => (
             <div key={d.id} className="perk">
-              <div><Link href={`/perks/${d.id}`} className="n">{d.name}</Link>{d.data.value && <span className="v">{d.data.value}</span>}</div>
-              <Link href={`/perks/${d.id}`} className="small">How to claim →</Link>
+              <div><Link href={`/perks/${d.id}`} className="n">{d.name}</Link>{d.data.value && <span className="v">{d.data.value}</span>}
+                <Link href={`/perks/${d.id}`} className="v">How to claim →</Link></div>
+              <ClaimButton dealId={d.id} claimed={claims.mine(d.id)} count={claims.count(d.id)} signedIn={!!me} />
             </div>
           ))}
         </section>

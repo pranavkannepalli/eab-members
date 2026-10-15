@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Face } from "@/ui/face";
 import { relTime, plural } from "@/lib/format";
+import { requestSignIn } from "@/ui/identity";
 
 export type Answer = { id: number; author: string; body: string; created_at: string; best: boolean };
 
@@ -72,7 +73,7 @@ export function Answers({ postId, ask, initial, admin, viewer, profiles }: {
               <textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={ask ? "Write an answer…" : "Write a reply…"} aria-label={`Write ${noun === "answer" ? "an answer" : "a reply"}`} />
               <button className="btn" disabled={busy || !text.trim()}>{busy ? "…" : ask ? "Answer" : "Reply"}</button>
             </form>
-          ) : <p className="muted small">Sign in to {noun}.</p>}
+          ) : <p className="small"><button type="button" className="textbtn" onClick={requestSignIn}>Sign in to {noun} →</button></p>}
           {error && <p className="err small">{error}</p>}
         </div>
       )}

@@ -3,11 +3,15 @@ import { query, Rec } from "@/lib/db";
 import { bySlug } from "@/lib/schema";
 import { groupBy } from "@/lib/feed";
 import { Claim } from "@/components";
+import { getIdentity, claimState } from "@/lib/identity";
+import { ClaimButton } from "@/ui/toggles";
 export const dynamic = "force-dynamic";
 
 // Perks are confirmed deals. The CRM deals tab stays the admin surface.
 export default async function Perks() {
   const perks: Rec[] = await query("select * from records where type='deals' and status in ('Confirmed','Active') order by coalesce(nullif(data->>'category',''),'Other'), name");
+  const me = await getIdentity();
+  const claims = await claimState(perks.map((d) => d.id), me?.email);
   const categories = bySlug("deals")!.fields.find((f) => f.key === "category")!.options!;
   return (
     <>
@@ -22,9 +26,9 @@ export default async function Perks() {
             <article key={d.id} className="card">
               <div className="head">
                 <h2><Link href={`/perks/${d.id}`}>{d.name}</Link></h2>
-                <div className="row">{d.data.category && <span className="pill">{d.data.category}</span>}</div>
+                <ClaimButton dealId={d.id} claimed={claims.mine(d.id)} count={claims.count(d.id)} signedIn={!!me} />
               </div>
-              <p className="muted small">{[d.data.tier, d.data.value].filter(Boolean).join(" · ")}</p>
+              <p className="muted small">{[d.data.category, d.data.tier, d.data.value].filter(Boolean).join(" · ")}</p>
               <Claim rec={d} />
               <p className="small"><Link href={`/crm/deals/${d.id}`}>CRM record</Link></p>
             </article>

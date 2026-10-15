@@ -4,10 +4,15 @@ import { query, Rec } from "@/lib/db";
 import { isHttp } from "@/lib/feed";
 import { isAdmin } from "@/lib/admin";
 import { auth } from "@/auth";
+import { getIdentity, memberByEmail, notifications } from "@/lib/identity";
+import { IdentityBar } from "@/ui/identity";
 
 export async function Nav({ admin }: { admin?: boolean }) {
   const a = admin ?? (await isAdmin());
   const s = await auth();
+  const me = await getIdentity();
+  const member = me ? !!(await memberByEmail(me.email)) : false;
+  const notices = me ? await notifications(me.email) : [];
   return (
     <header className="top">
       <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley <b>Members</b></span></Link>
@@ -20,6 +25,7 @@ export async function Nav({ admin }: { admin?: boolean }) {
         {a && <Link href="/crm">CRM</Link>}
         {a && <Link href="/finances">Finances</Link>}
         <form action="/crm/search" method="get" className="navsearch"><input type="search" name="q" placeholder="Search" aria-label="Search all records" /></form>
+        <IdentityBar me={me} member={member} notices={notices} />
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>
     </header>

@@ -18,6 +18,9 @@ export default async function Profile({ params }: { params: Promise<{ id: string
   const admin = await isAdmin();
   const posts: Rec[] = await query("select * from records where type='updates' and status<>'Archived' and lower(trim(data->>'author'))=lower(trim($1)) order by coalesce(nullif(data->>'date',''), to_char(created_at,'YYYY-MM-DD')) desc, created_at desc limit 20", [m.name]);
   const intros: Rec[] = await query("select * from records where type='pocs' and lower(trim(data->>'eab_contact'))=lower(trim($1)) order by updated_at desc", [m.name]);
+  const claimed: Rec[] = m.data.email
+    ? await query("select r.* from claims c join records r on r.id=c.deal_id where c.member_email=lower(trim($1)) and r.type='deals' order by c.claimed_at desc", [m.data.email])
+    : [];
   const meta = [m.data.year, m.data.major, m.data.cohort].filter(Boolean).join(" · ");
   const expertise = tags(m.data.expert_tags);
   return (
@@ -60,6 +63,11 @@ export default async function Profile({ params }: { params: Promise<{ id: string
             <span className={`pill s-${p.status.replace(/\W/g, "")}`}>{p.status}</span>
           </p>
         ))}
+      </section>
+      <section className="card">
+        <h3 className="eyebrow">Perks claimed</h3>
+        {claimed.length === 0 && <p className="muted small">{m.data.email ? "None yet." : "Add an email to this member to track claims."}</p>}
+        {claimed.map((d) => <p key={d.id} className="plist"><Link href={`/perks/${d.id}`}>{d.name}</Link><span className="pmeta">{d.data.value}</span></p>)}
       </section>
       {admin && (
         <details className="card editprofile">

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { query, Rec } from "@/lib/db";
 import { today, upcomingEvents, isHttp } from "@/lib/feed";
+import { getIdentity, rsvpState } from "@/lib/identity";
+import { RsvpButton } from "@/ui/toggles";
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -13,6 +15,8 @@ const firstLine = (s: string) => s.split("\n").map((l) => l.trim()).find(Boolean
 
 export default async function Events() {
   const upcoming = await upcomingEvents(today(), { limit: 100, undated: true });
+  const me = await getIdentity();
+  const rsvps = await rsvpState(upcoming.map((e) => e.id), me?.email);
   const past: Rec[] = await query("select * from records where type='events' and status='Past' order by data->>'date' desc nulls last, created_at desc limit 12");
   return (
     <>
@@ -30,7 +34,10 @@ export default async function Events() {
             </div>
             <p className="muted small">{[e.data.time, e.data.location].filter(Boolean).join(" · ")}</p>
             {e.notes && <p className="oneline">{firstLine(e.notes)}</p>}
-            {isHttp(e.data.rsvp) && <p><a className="btn" href={e.data.rsvp} target="_blank" rel="noreferrer">RSVP</a></p>}
+            <div className="evactions">
+              <RsvpButton eventId={e.id} me={rsvps.me(e.id)} count={rsvps.count(e.id)} signedIn={!!me} />
+              {isHttp(e.data.rsvp) && <a className="btn ghost small" href={e.data.rsvp} target="_blank" rel="noreferrer">External RSVP ↗</a>}
+            </div>
           </div>
         </article>
       ))}
