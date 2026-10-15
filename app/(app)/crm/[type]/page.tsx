@@ -20,6 +20,7 @@ export default async function List({ params, searchParams }: { params: Promise<{
   const cols = cfg.columns.map((k) => cfg.fields.find((x) => x.key === k)!);
   return (
     <>
+      <p className="small"><Link href="/crm">← CRM</Link></p>
       <div className="head"><div><p className="eyebrow">CRM</p><h1>{cfg.label}</h1><p className="muted">{cfg.blurb}</p></div>
         <div><a className="btn ghost" href={`/api/export/${type}`}>Export CSV</a> {admin && <Link className="btn" href={`/crm/${type}/new`}>+ Add {cfg.singular.toLowerCase()}</Link>}</div></div>
       <form className="filters">

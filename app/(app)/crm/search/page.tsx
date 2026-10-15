@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { query, Rec } from "@/lib/db";
-import { bySlug, TYPES } from "@/lib/schema";
+import { bySlug } from "@/lib/schema";
 export const dynamic = "force-dynamic";
 
 export default async function Search({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -9,8 +9,8 @@ export default async function Search({ searchParams }: { searchParams: Promise<{
   return (
     <>
       <h1>Search</h1>
-      <form className="filters"><input name="q" defaultValue={q} placeholder="Search everything: names, companies, emails, notes..." autoFocus /><button className="btn ghost">Search</button></form>
-      <p className="muted small">Searches all types at once: {TYPES.map((t) => t.label).join(", ")}. Search a person or company to see everyone connected to them.</p>
+      {q ? <p className="muted">{rows.length} {rows.length === 1 ? "result" : "results"} for &ldquo;{q}&rdquo;</p>
+        : <p className="muted">Type in the search bar above to search everything: names, companies, emails, notes.</p>}
       <table><tbody>
         {rows.map((r) => <tr key={r.id}><td><Link href={`/crm/${r.type}/${r.id}`}>{r.name}</Link></td><td className="muted">{bySlug(r.type)?.singular}</td><td>{r.status}</td></tr>)}
         {q && rows.length === 0 && <tr><td className="muted">No matches.</td></tr>}

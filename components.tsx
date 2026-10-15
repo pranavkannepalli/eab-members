@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TypeCfg, TYPES, bySlug, defaultStatus } from "@/lib/schema";
+import { TypeCfg, bySlug, defaultStatus } from "@/lib/schema";
 import { query, Rec } from "@/lib/db";
 import { isHttp } from "@/lib/feed";
 import { isAdmin } from "@/lib/admin";
@@ -18,7 +18,7 @@ export async function Nav({ admin }: { admin?: boolean }) {
         <Link href="/resources">Resources</Link>
         <Link href="/finances">Finances</Link>
         <Link href="/crm">CRM</Link>
-        <Link href="/crm/search">Search</Link>
+        <form action="/crm/search" method="get" className="navsearch"><input type="search" name="q" placeholder="Search" aria-label="Search all records" /></form>
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
       </nav>
     </header>
@@ -48,14 +48,6 @@ export async function RecordForm({ cfg, rec, action }: { cfg: TypeCfg; rec?: Rec
           : <p className="wide muted small">Read-only. <Link href="/admin/login">Unlock admin</Link> to edit.</p>}
       </fieldset>
     </form>
-  );
-}
-
-export function CrmTabs() {
-  return (
-    <div className="tabs">
-      {TYPES.map((t) => <Link key={t.slug} href={`/crm/${t.slug}`}>{t.label}</Link>)}
-    </div>
   );
 }
 
