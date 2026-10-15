@@ -3,6 +3,8 @@ import { query, Rec } from "@/lib/db";
 import { today, upcomingEvents, isHttp } from "@/lib/feed";
 import { getIdentity, rsvpState } from "@/lib/identity";
 import { RsvpButton } from "@/ui/toggles";
+import { isAdmin } from "@/lib/admin";
+import { bySlug } from "@/lib/schema";
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -18,25 +20,26 @@ export default async function Events() {
   const me = await getIdentity();
   const rsvps = await rsvpState(upcoming.map((e) => e.id), me?.email);
   const past: Rec[] = await query("select * from records where type='events' and status='Past' order by data->>'date' desc nulls last, created_at desc limit 12");
+  const admin = await isAdmin();
   return (
     <>
-      <p className="eyebrow">E@B Members</p>
-      <h1>Events</h1>
+      <div className="head"><div><h1>Events</h1><p className="muted">{bySlug("events")!.blurb}</p></div>
+        {admin && <div><a className="btn ghost" href="/api/export/events">Export CSV</a> <Link className="btn" href="/events/new">+ Add event</Link></div>}</div>
       <h2 className="eyebrow section">Upcoming</h2>
-      {upcoming.length === 0 && <div className="card"><p className="muted">Nothing scheduled yet.</p></div>}
+      {upcoming.length === 0 && <div className="card"><p className="muted">Nothing on the calendar yet. Check back soon.</p></div>}
       {upcoming.map((e) => (
         <article key={e.id} className="card event">
           <DateChip date={e.data.date} />
           <div>
             <div className="head">
-              <h2><Link href={`/crm/events/${e.id}`}>{e.name}</Link></h2>
+              <h2><Link href={`/events/${e.id}`}>{e.name}</Link></h2>
               {e.data.category && <span className="pill">{e.data.category}</span>}
             </div>
             <p className="muted small">{[e.data.time, e.data.location].filter(Boolean).join(" · ")}</p>
             {e.notes && <p className="oneline">{firstLine(e.notes)}</p>}
             <div className="evactions">
               <RsvpButton eventId={e.id} me={rsvps.me(e.id)} count={rsvps.count(e.id)} signedIn={!!me} />
-              {isHttp(e.data.rsvp) && <a className="btn ghost small" href={e.data.rsvp} target="_blank" rel="noreferrer">External RSVP ↗</a>}
+              {isHttp(e.data.rsvp) && <a className="btn ghost small" href={e.data.rsvp} target="_blank" rel="noreferrer">RSVP on the event page ↗</a>}
             </div>
           </div>
         </article>
@@ -46,7 +49,7 @@ export default async function Events() {
       {past.length > 0 && (
         <table><tbody>
           {past.map((e) => (
-            <tr key={e.id}><td className="muted">{e.data.date}</td><td><Link href={`/crm/events/${e.id}`}>{e.name}</Link></td><td className="muted">{e.data.location}</td><td>{e.data.category && <span className="pill">{e.data.category}</span>}</td></tr>
+            <tr key={e.id}><td className="muted">{e.data.date}</td><td><Link href={`/events/${e.id}`}>{e.name}</Link></td><td className="muted">{e.data.location}</td><td>{e.data.category && <span className="pill">{e.data.category}</span>}</td></tr>
           ))}
         </tbody></table>
       )}

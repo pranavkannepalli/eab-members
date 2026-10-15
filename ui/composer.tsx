@@ -12,15 +12,15 @@ export function Composer({ author, categories }: { author: string; categories: s
     <form action={action} className="card composer">
       <Face name={author} size={40} />
       <div className="cbody">
-        <textarea name="text" rows={2} required aria-label="Post"
-          placeholder={kind === "Ask" ? "Ask E@B a question… (first line is the question)" : "Share an update with E@B…"} />
-        {showLink && <input name="link" type="url" placeholder="https://link (optional)" className="clink" />}
+        <textarea name="text" rows={2} required aria-label="Write a post"
+          placeholder={kind === "Ask" ? "Ask the club a question… The first line is your question." : "What's new? The first line becomes the title."} />
+        {showLink && <input name="link" type="url" placeholder="Paste a link (optional)" className="clink" />}
         <div className="crow">
           <select name="category" value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Post type">
             {categories.map((c) => <option key={c}>{c}</option>)}
           </select>
-          {!showLink && <button type="button" className="textbtn" onClick={() => setShowLink(true)}>+ Link</button>}
-          <label className="textbtn"><input type="checkbox" name="status" value="Pinned" /> Pin</label>
+          {!showLink && <button type="button" className="textbtn" onClick={() => setShowLink(true)}>+ Add link</button>}
+          <label className="textbtn"><input type="checkbox" name="status" value="Pinned" /> Pin to top</label>
           <span className="muted small grow">Posting as {author}</span>
           <input type="hidden" name="author" value={author} />
           <button className="btn" disabled={pending}>{pending ? "Posting…" : "Post"}</button>

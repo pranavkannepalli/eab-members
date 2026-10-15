@@ -5,10 +5,11 @@ import { query } from "@/lib/db";
 import { bySlug, TYPES } from "@/lib/schema";
 import { csvRecords } from "@/lib/csv";
 import { requireAdmin, checkPassword, setAdminCookie, clearAdminCookie } from "@/lib/admin";
+import { homeOf, recordHref } from "@/lib/routes";
 
 function parse(slug: string, fd: FormData) {
   const cfg = bySlug(slug);
-  if (!cfg) throw new Error("bad type");
+  if (!cfg) throw new Error("That section doesn't exist.");
   const name = String(fd.get("name") || "").trim();
   if (!name) throw new Error("Name is required");
   const data: Record<string, string> = {};
@@ -25,23 +26,24 @@ export async function saveRecord(slug: string, id: number | null, fd: FormData) 
     const [row] = await query("insert into records(type,name,status,data,notes) values($1,$2,$3,$4,$5) returning id", [slug, r.name, r.status, JSON.stringify(r.data), r.notes]);
     id = row.id;
   }
-  revalidatePath(`/crm/${slug}`);
-  redirect(`/crm/${slug}/${id}`);
+  revalidatePath(homeOf(slug));
+  redirect(recordHref(slug, id!));
 }
 
 export async function deleteRecord(slug: string, id: number) {
   await requireAdmin();
   await query("delete from records where id=$1 and type=$2", [id, slug]);
-  revalidatePath(`/crm/${slug}`);
-  redirect(`/crm/${slug}`);
+  revalidatePath(homeOf(slug));
+  redirect(homeOf(slug));
 }
 
-// Prospect -> confirmed deal. Only an admin can do this, and it is the only way something becomes a "Deal".
-export async function promoteProspect(id: number) {
+// One-click status change from a detail page: confirm a deal (makes it a perk), pin or archive a post.
+export async function setStatus(slug: string, id: number, status: string) {
   await requireAdmin();
-  await query("update records set type='deals', status='Confirmed', updated_at=now() where id=$1 and type='prospects'", [id]);
-  revalidatePath("/crm", "layout");
-  redirect(`/crm/deals/${id}`);
+  if (!bySlug(slug)?.statuses.includes(status)) throw new Error("That status isn't allowed here.");
+  await query("update records set status=$1, updated_at=now() where id=$2 and type=$3", [status, id, slug]);
+  revalidatePath("/", "layout");
+  redirect(recordHref(slug, id));
 }
 
 // Home feed composer: one textarea. Its first line is the title (the question, for an Ask); the rest is the body (notes).
@@ -71,23 +73,23 @@ export async function adminLogout() { await clearAdminCookie(); redirect("/login
 export async function importCsv(fd: FormData) {
   await requireAdmin();
   const slug = String(fd.get("type")); const cfg = bySlug(slug);
-  if (!cfg) throw new Error("bad type");
+  if (!cfg) throw new Error("That section doesn't exist.");
   const rows = csvRecords(cfg, String(fd.get("csv") || ""));
   for (const r of rows)
     await query("insert into records(type,name,status,data,notes) values($1,$2,$3,$4,$5)", [slug, r.name, r.status, JSON.stringify(r.data), r.notes]);
   const n = rows.length;
   revalidatePath("/", "layout");
-  redirect(`/admin?msg=${encodeURIComponent(`Imported ${n} into ${cfg.label}`)}`);
+  redirect(`/admin?msg=${encodeURIComponent(`Added ${n} ${n === 1 ? "entry" : "entries"} to ${cfg.label}.`)}`);
 }
 
 export async function clearType(fd: FormData) {
   await requireAdmin();
   const slug = String(fd.get("type"));
-  if (!TYPES.some((t) => t.slug === slug)) throw new Error("bad type");
-  if (String(fd.get("confirm")) !== "DELETE") redirect("/admin?msg=" + encodeURIComponent("Type DELETE to confirm clearing a tab"));
+  if (!TYPES.some((t) => t.slug === slug)) throw new Error("That section doesn't exist.");
+  if (String(fd.get("confirm")) !== "DELETE") redirect("/admin?msg=" + encodeURIComponent("Nothing was deleted. Type DELETE in the box to confirm."));
   await query("delete from records where type=$1", [slug]);
   revalidatePath("/", "layout");
-  redirect(`/admin?msg=${encodeURIComponent("Cleared " + slug)}`);
+  redirect(`/admin?msg=${encodeURIComponent(`Deleted everything in ${bySlug(slug)!.label}.`)}`);
 }
 
 // Intro post -> warm-intro record (pocs) for the pair, unless one already exists that was not dropped.

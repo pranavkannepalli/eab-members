@@ -5,10 +5,12 @@ export const dynamic = "force-dynamic";
 
 // GET /api/records?type=&q=&status=  (same matching as the list page)
 export const GET = handle(async (req: Request) => {
-  if (!(await apiAccess(req))) return err(401, "Sign in as a member or send Authorization: Bearer <ADMIN_PASSWORD>");
+  const access = await apiAccess(req);
+  if (!access) return err(401, "Sign in as a member or send Authorization: Bearer <ADMIN_PASSWORD>");
   const sp = new URL(req.url).searchParams;
   const type = sp.get("type") || "", q = sp.get("q") || "", status = sp.get("status") || "";
-  if (type && !bySlug(type)) return err(400, `Unknown type. Use one of: ${TYPES.map((t) => t.slug).join(", ")}`);
+  // The bearer token may also list rows of a retired type, to migrate them with PATCH {type}.
+  if (type && !bySlug(type) && access !== "admin") return err(400, `Unknown type. Use one of: ${TYPES.map((t) => t.slug).join(", ")}`);
   const where = ["true"]; const p: unknown[] = [];
   if (type) { p.push(type); where.push(`type=$${p.length}`); }
   if (q) { p.push(`%${q}%`); where.push(`(name ilike $${p.length} or data::text ilike $${p.length} or notes ilike $${p.length})`); }
