@@ -15,6 +15,7 @@ export const TYPES: TypeCfg[] = [
       { key: "year", label: "Year", kind: "select", options: ["Freshman", "Sophomore", "Junior", "Senior", "Grad"] },
       { key: "major", label: "Major" }, { key: "cohort", label: "Cohort (e.g. Fall 2026)" },
       { key: "company", label: "Building / company" }, { key: "linkedin", label: "LinkedIn", kind: "url" },
+      { key: "avatar", label: "Photo URL", kind: "url" },
     ],
     columns: ["role", "year", "major", "cohort"], filterField: "year",
   },
