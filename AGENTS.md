@@ -7,7 +7,7 @@ Private members site for Entrepreneurs at Berkeley (members.entrepreneursatberke
 
 Stack: Next.js 15 App Router, React 19, NextAuth v5 beta (Google sign-in, members only), Postgres via `DATABASE_URL` in production, embedded PGlite in `./.data` locally. No ORM.
 
-**Invariant: one table.** Every entity is a row in `records(id, type, name, status, data jsonb, notes, created_at, updated_at)`. `type` is a slug from `lib/schema.ts`; `data` holds that type's fields as strings; long text (update body, event description) goes in `notes`. Do not add tables or per-type columns.
+**Invariant: one table.** Every entity is a row in `records(id, type, name, status, data jsonb, notes, created_at, updated_at)`. `type` is a slug from `lib/schema.ts`; `data` holds that type's fields as strings; long text (update body, event description) goes in `notes`. Do not add per-type columns. The only other tables hold per-person activity on records, created in `lib/db.ts` init (one `create table if not exists` call each): `comments` (answers/replies on `updates` posts). Do not add more without the maintainer's approval.
 
 ## Pages
 Every page reads the same `records` table. Member pages are read-only; editing happens in `/crm` (admin) or the API.
@@ -65,6 +65,14 @@ Auth: `Authorization: Bearer <token>` where the token is the `ADMIN_PASSWORD` (l
 
     # Import CSV (same columns; rows are appended, nothing is overwritten)
     curl -H "$H" -H 'content-type: text/csv' --data-binary @members.csv "$BASE/api/import/members"   # -> {"imported": N}
+
+Feed answers (table `comments`; reads need a member session, the admin cookie or the bearer token):
+
+    curl -H "$H" "$BASE/api/comments?post_id=17"                       # -> {"count": N, "comments": [...]} (hidden ones left out)
+    curl -H "$H" -H 'content-type: application/json' -X POST "$BASE/api/comments" -d '{"post_id":17,"author":"Maya Sofer","body":"Tabling worked."}'
+    curl -H "$H" -H 'content-type: application/json' -X PATCH "$BASE/api/comments/3" -d '{"best":true}'   # admin; clears best on the post's other answers
+    curl -H "$H" -H 'content-type: application/json' -X PATCH "$BASE/api/comments/3" -d '{"hidden":true}' # admin
+    curl -H "$H" -X DELETE "$BASE/api/comments/3"                                                        # admin
 
 Types and their fields/statuses: read `lib/schema.ts` (slugs: members, alumni, deals, prospects, vcs, pocs, updates, events, resources, finance). A 400 response lists the allowed types, statuses or field keys.
 

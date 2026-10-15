@@ -2,6 +2,7 @@ import { auth, devLogin } from "@/auth";
 import { checkPassword } from "@/lib/admin";
 import { isMemberEmail } from "@/lib/access";
 import { TypeCfg } from "@/lib/schema";
+import { isAdmin } from "@/lib/admin";
 
 // JSON API auth: `Authorization: Bearer <ADMIN_PASSWORD>` = full access. Otherwise a member session may read; nobody else.
 export async function apiAccess(req: Request): Promise<"admin" | "member" | null> {
@@ -9,6 +10,12 @@ export async function apiAccess(req: Request): Promise<"admin" | "member" | null
   if (m) return checkPassword(m[1].trim()) ? "admin" : null;
   const email = (await auth())?.user?.email;
   return email && (devLogin || (await isMemberEmail(email))) ? "member" : null;
+}
+
+// For endpoints the site's own pages call (comments, claims, RSVPs): also accept the admin cookie, since admins browse without a member session.
+export async function siteAccess(req: Request): Promise<"admin" | "member" | null> {
+  if (!req.headers.get("authorization") && (await isAdmin())) return "admin";
+  return apiAccess(req);
 }
 
 export const json = (body: unknown, status = 200) => Response.json(body, { status });

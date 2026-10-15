@@ -32,6 +32,9 @@ async function init(): Promise<Q> {
   }
   await q(SCHEMA.split(";")[0]);
   await q("create index if not exists records_type_idx on records(type)");
+  // Feed answers/replies on `updates` records. One statement per call so each table is created on a cold start.
+  await q("create table if not exists comments (id serial primary key, post_id integer not null, author text not null, body text not null, created_at timestamptz not null default now(), hidden boolean not null default false, best boolean not null default false)");
+  await q("create index if not exists comments_post_idx on comments(post_id)");
   const [{ n }] = await q("select count(*)::int as n from records");
   // Fresh local DB: auto-seed from seed/*.json. For real onboarding use `npm run seed:load`.
   if (n === 0) {

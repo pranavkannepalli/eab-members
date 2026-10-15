@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { today, upcomingEvents, isHttp, relTime, postTime, postKind } from "@/lib/feed";
 import { Face, personHref } from "@/ui/face";
 import { Composer } from "@/ui/composer";
+import { Answers, Answer } from "@/ui/answers";
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -16,7 +17,9 @@ function DateBlock({ date }: { date?: string }) {
 }
 const paragraphs = (s: string) => s.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
-function PostCard({ u, members, ids }: { u: Rec; members: Map<string, Rec>; ids: Map<string, number> }) {
+type Thread = { answers: Answer[]; admin: boolean; viewer: string | null; profiles: Record<string, string> };
+
+function PostCard({ u, members, ids, thread }: { u: Rec; members: Map<string, Rec>; ids: Map<string, number>; thread: Thread }) {
   const author = u.data.author || "E@B";
   const who = members.get(author.toLowerCase());
   const href = personHref(author, ids);
@@ -35,6 +38,7 @@ function PostCard({ u, members, ids }: { u: Rec; members: Map<string, Rec>; ids:
       <h2 className={kind === "ask" ? "askq" : "ptitle"}><Link href={`/crm/updates/${u.id}`}>{u.name}</Link></h2>
       {u.notes && <div className="pbody">{paragraphs(u.notes).map((p, i) => <p key={i}>{p}</p>)}</div>}
       {isHttp(u.data.link) && <a className="linkchip" href={u.data.link} target="_blank" rel="noreferrer">↗ {u.data.link.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "")}</a>}
+      <Answers postId={u.id} ask={kind === "ask"} initial={thread.answers} admin={thread.admin} viewer={thread.viewer} profiles={thread.profiles} />
     </article>
   );
 }
@@ -51,18 +55,32 @@ export default async function Home() {
   const newest = allMembers.filter((m) => m.status === "Active" || m.status === "Exec").slice(0, 3);
   const admin = await isAdmin();
   const me = (await auth())?.user;
+  const viewer = me?.name || me?.email || (admin ? "E@B Exec" : null);
+  const comments: (Answer & { post_id: number })[] = updates.length
+    ? await query("select id, post_id, author, body, created_at, best from comments where not hidden and post_id = any($1::int[]) order by created_at, id", [updates.map((u) => u.id)])
+    : [];
+  const answersFor = (id: number) => comments.filter((c) => c.post_id === id).map((c) => ({ ...c, created_at: new Date(c.created_at).toISOString() }));
+  const profiles = Object.fromEntries([...ids.keys()].map((k) => [k, personHref(k, ids)]));
+  // Questions nobody has answered yet, surfaced under the composer.
+  const open = updates.filter((u) => u.data.category === "Ask" && !comments.some((c) => c.post_id === u.id)).slice(0, 3);
   const categories = bySlug("updates")!.fields.find((f) => f.key === "category")!.options!;
   return (
     <div className="home">
       <section className="stream">
         {admin && <Composer author={me?.name || me?.email || "E@B Exec"} categories={categories} />}
+        {open.length > 0 && (
+          <nav className="stillopen" aria-label="Unanswered questions">
+            <span className="eyebrow">Still open</span>
+            {open.map((u) => <a key={u.id} href={`#post-${u.id}`}>{u.name}</a>)}
+          </nav>
+        )}
         {updates.length === 0 && (
           <div className="post empty">
             <h2 className="ptitle">Nothing on the feed yet</h2>
             <p className="muted">{admin ? "Kick it off above: ask a question, share a win, or introduce two members." : "Questions, wins and intros from E@B members will show up here."}</p>
           </div>
         )}
-        {updates.map((u) => <PostCard key={u.id} u={u} members={members} ids={ids} />)}
+        {updates.map((u) => <PostCard key={u.id} u={u} members={members} ids={ids} thread={{ answers: answersFor(u.id), admin, viewer, profiles }} />)}
       </section>
       <aside className="rail">
         <section className="card">
