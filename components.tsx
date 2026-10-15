@@ -52,3 +52,14 @@ export function CrmTabs() {
     </div>
   );
 }
+
+// "How to claim" block for a perk (a confirmed deal): the route, then any caveats.
+export function Claim({ rec }: { rec: Rec }) {
+  return (
+    <div className="claim">
+      <p className="eyebrow">How to claim</p>
+      <p className="pre">{rec.data.route || "Ask the E@B owner of this perk."}</p>
+      {rec.data.caveat && <p className="muted small pre">{rec.data.caveat}</p>}
+    </div>
+  );
+}

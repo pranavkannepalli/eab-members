@@ -43,3 +43,5 @@ fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{back
 .row .check{width:auto;margin-right:4px}.row label{display:flex;align-items:center}
 .s-Pinned,.s-Upcoming{background:var(--navy);color:#fff}.s-Archived,.s-Past,.s-Cancelled{background:#eef0f3;color:#4a5565}
 @media(max-width:800px){.grid.four{grid-template-columns:1fr 1fr}.feed{grid-template-columns:1fr}.feed aside{position:static}.feed .row{flex-wrap:wrap}}
+.eyebrow.section{margin:28px 0 -4px}.pre{white-space:pre-wrap}
+.claim{background:var(--soft);border-radius:12px;padding:12px 16px;margin:12px 0}.claim p{margin:4px 0}.claim .eyebrow{margin:0}
