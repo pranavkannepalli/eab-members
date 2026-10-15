@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "name": "Welcome to the E@B members feed",
+    "status": "Pinned",
+    "author": "Rishi Manjure",
+    "date": "2026-10-13",
+    "category": "Announcement",
+    "notes": "This is home now: ask the club a question, share what you shipped, or ask exec to introduce you to another member.\n\nPerks, events and the directory are one click away in the top bar."
+  },
+  {
+    "name": "How are you finding your first users on campus?",
+    "status": "Open",
+    "author": "Pranav Kannepalli",
+    "date": "2026-10-14",
+    "category": "Ask",
+    "notes": "Looking for what has actually worked for people here: flyers, club mailing lists, Discord servers, tabling on Sproul? Answer below."
+  },
+  {
+    "name": "Saran, meet Pranav",
+    "status": "Open",
+    "author": "Juhi Khetawat",
+    "date": "2026-10-12",
+    "category": "Intro",
+    "member_a": "Saran Chockalingam",
+    "member_b": "Pranav Kannepalli",
+    "notes": "Saran runs Projects and Pranav is building this members site. Worth comparing notes on what to build next."
+  },
+  {
+    "name": "The new members site is live",
+    "status": "Open",
+    "author": "Pranav Kannepalli",
+    "date": "2026-10-10",
+    "category": "Update",
+    "link": "https://eab-members.vercel.app",
+    "notes": "Feed, perks, events, directory and resources in one place. Feedback welcome: reply here."
+  }
+]

@@ -16,6 +16,7 @@ export const TYPES: TypeCfg[] = [
       { key: "major", label: "Major" }, { key: "cohort", label: "Cohort (e.g. Fall 2026)" },
       { key: "company", label: "Building / company" }, { key: "linkedin", label: "LinkedIn", kind: "url" },
       { key: "avatar", label: "Photo URL", kind: "url" },
+      { key: "expert_tags", label: "Expertise (comma-separated, up to 3)" },
     ],
     columns: ["role", "year", "major", "cohort"], filterField: "year",
   },
@@ -86,8 +87,9 @@ export const TYPES: TypeCfg[] = [
     statuses: ["Pinned", "Open", "Archived"], defaultStatus: "Open",
     fields: [
       { key: "author", label: "Author" }, { key: "date", label: "Date", kind: "date" },
-      { key: "category", label: "Category", kind: "select", options: ["Announcement", "Win", "Recruiting", "Event", "Other"] },
+      { key: "category", label: "Category", kind: "select", options: ["Announcement", "Ask", "Intro", "Update", "Win", "Recruiting", "Event", "Other"] },
       { key: "link", label: "Link", kind: "url" },
+      { key: "member_a", label: "Intro: member" }, { key: "member_b", label: "Intro: introduce to" },
     ],
     columns: ["author", "date", "category"], filterField: "category",
   },

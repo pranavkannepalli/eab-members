@@ -2,72 +2,142 @@ import Link from "next/link";
 import { query, Rec } from "@/lib/db";
 import { bySlug } from "@/lib/schema";
 import { isAdmin } from "@/lib/admin";
-import { auth } from "@/auth";
-import { postUpdate } from "@/app/actions";
-import { today, upcomingEvents } from "@/lib/feed";
+import { today, upcomingEvents, isHttp, relTime, postTime, postKind } from "@/lib/feed";
+import { Face, personHref } from "@/ui/face";
+import { Composer } from "@/ui/composer";
+import { Answers, Answer } from "@/ui/answers";
+import { requestIntro } from "@/app/actions";
+import { getIdentity, claimState, rsvpState } from "@/lib/identity";
+import { ClaimButton, RsvpButton } from "@/ui/toggles";
 export const dynamic = "force-dynamic";
 
-const STATS: [string, string][] = [["members", "Members"], ["alumni", "Alumni"], ["deals", "Deals"], ["pocs", "Warm intros"]];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// Navy date block from a YYYY-MM-DD string (parsed by hand so no timezone shifts the day).
+function DateBlock({ date }: { date?: string }) {
+  const m = (date || "").match(/^\d{4}-(\d{2})-(\d{2})$/);
+  return <div className="dateblock">{m ? <><b>{Number(m[2])}</b>{MONTHS[Number(m[1]) - 1]}</> : <b>TBD</b>}</div>;
+}
+const paragraphs = (s: string) => s.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+
+type Thread = { answers: Answer[]; admin: boolean; viewer: string | null; profiles: Record<string, string>; introMade: boolean };
+
+function MemberChip({ name, members, ids }: { name: string; members: Map<string, Rec>; ids: Map<string, number> }) {
+  return <Link href={personHref(name, ids)} className="mchip"><Face name={name} src={members.get(name.trim().toLowerCase())?.data.avatar} size={22} />{name}</Link>;
+}
+
+function PostCard({ u, members, ids, thread }: { u: Rec; members: Map<string, Rec>; ids: Map<string, number>; thread: Thread }) {
+  const author = u.data.author || "E@B";
+  const who = members.get(author.toLowerCase());
+  const href = personHref(author, ids);
+  const kind = postKind(u.data.category);
+  return (
+    <article id={`post-${u.id}`} className={`post${u.status === "Pinned" ? " pinned" : ""}`}>
+      {u.status === "Pinned" && <p className="pin">Pinned</p>}
+      <header className="phead">
+        <Face name={author} src={who?.data.avatar} href={href} />
+        <div className="pwho">
+          <Link href={href} className="pname">{author}</Link>
+          <span className="pmeta">{[who?.data.role, relTime(postTime(u.data.date, u.created_at))].filter(Boolean).join(" · ")}</span>
+        </div>
+        {u.data.category && <span className={`badge b-${kind}`}>{u.data.category}</span>}
+      </header>
+      <h2 className={kind === "ask" ? "askq" : "ptitle"}><Link href={`/crm/updates/${u.id}`}>{u.name}</Link></h2>
+      {kind === "intro" && u.data.member_a && u.data.member_b && (
+        <div className="introrow">
+          <MemberChip name={u.data.member_a} members={members} ids={ids} /><span className="muted">↔</span><MemberChip name={u.data.member_b} members={members} ids={ids} />
+          {thread.introMade ? <span className="madepill">Intro made ✓</span>
+            : thread.admin && <form action={requestIntro.bind(null, u.id)}><button className="btn small">Request intro</button></form>}
+        </div>
+      )}
+      {u.notes && <div className="pbody">{paragraphs(u.notes).map((p, i) => <p key={i}>{p}</p>)}</div>}
+      {isHttp(u.data.link) && <a className="linkchip" href={u.data.link} target="_blank" rel="noreferrer">↗ {u.data.link.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "")}</a>}
+      <Answers postId={u.id} ask={kind === "ask"} initial={thread.answers} admin={thread.admin} viewer={thread.viewer} profiles={thread.profiles} />
+    </article>
+  );
+}
 
 export default async function Home() {
-  const now = today();
   const updates: Rec[] = await query(
     `select * from records where type='updates' and status<>'Archived'
-     order by (status='Pinned') desc, coalesce(nullif(data->>'date',''), to_char(created_at,'YYYY-MM-DD')) desc, created_at desc limit 20`);
-  const events = await upcomingEvents(now);
-  const counts = await query("select type, count(*)::int n from records where type in ('members','alumni','deals','pocs') group by type");
+     order by (status='Pinned') desc, coalesce(nullif(data->>'date',''), to_char(created_at,'YYYY-MM-DD')) desc, created_at desc limit 30`);
+  const events = await upcomingEvents(today(), { limit: 4 });
+  const perks: Rec[] = await query("select * from records where type='deals' and status in ('Confirmed','Active') order by updated_at desc, id desc limit 3");
+  const allMembers: Rec[] = await query("select * from records where type='members' order by created_at desc, id desc");
+  const members = new Map(allMembers.map((m) => [m.name.trim().toLowerCase(), m]));
+  const ids = new Map(allMembers.map((m) => [m.name.trim().toLowerCase(), m.id]));
+  const newest = allMembers.filter((m) => m.status === "Active" || m.status === "Exec").slice(0, 3);
   const admin = await isAdmin();
-  const me = admin ? (await auth())?.user : null;
+  const me = await getIdentity();
+  const claims = await claimState(perks.map((d) => d.id), me?.email);
+  const rsvps = await rsvpState(events.map((e) => e.id), me?.email);
+  const viewer = me?.name || (admin ? "E@B Exec" : null);
+  const comments: (Answer & { post_id: number })[] = updates.length
+    ? await query("select id, post_id, author, body, created_at, best from comments where not hidden and post_id = any($1::int[]) order by created_at, id", [updates.map((u) => u.id)])
+    : [];
+  const answersFor = (id: number) => comments.filter((c) => c.post_id === id).map((c) => ({ ...c, created_at: new Date(c.created_at).toISOString() }));
+  // Intro pairs that already have a warm-intro record (E@B contact = member_a, org = member_b).
+  const pairs = new Set((await query("select data from records where type='pocs' and status<>'Dropped'")).map((p: Rec) => `${(p.data.eab_contact || "").trim().toLowerCase()}|${(p.data.org || "").trim().toLowerCase()}`));
+  const introMade = (u: Rec) => pairs.has(`${(u.data.member_a || "").trim().toLowerCase()}|${(u.data.member_b || "").trim().toLowerCase()}`);
+  const profiles = Object.fromEntries([...ids.keys()].map((k) => [k, personHref(k, ids)]));
+  // Questions nobody has answered yet, surfaced under the composer.
+  const open = updates.filter((u) => u.data.category === "Ask" && !comments.some((c) => c.post_id === u.id)).slice(0, 3);
   const categories = bySlug("updates")!.fields.find((f) => f.key === "category")!.options!;
   return (
-    <>
-      <p className="eyebrow">E@B Members</p>
-      <h1>Builders need other builders.</h1>
-      <div className="grid four">
-        {STATS.map(([t, label]) => <div key={t} className="card stat"><b>{counts.find((c) => c.type === t)?.n ?? 0}</b><span>{label}</span></div>)}
-      </div>
-      <p className="muted small explore">Explore: <Link href="/perks">Perks</Link> · <Link href="/events">Events</Link> · <Link href="/directory">Directory</Link> · <Link href="/resources">Resources</Link></p>
-      <div className="feed">
-        <section>
-          {admin && (
-            <form action={postUpdate} className="card stack">
-              <h2>Share an update</h2>
-              <input name="name" placeholder="Title" required />
-              <div className="row">
-                <select name="category" defaultValue="Announcement">{categories.map((c) => <option key={c}>{c}</option>)}</select>
-                <input name="date" type="date" defaultValue={now} />
-                <input name="author" placeholder="Author" defaultValue={me?.name || me?.email || ""} />
+    <div className="home">
+      <section className="stream">
+        {admin && <Composer author={me?.name || "E@B Exec"} categories={categories} />}
+        {open.length > 0 && (
+          <nav className="stillopen" aria-label="Unanswered questions">
+            <span className="eyebrow">Still open</span>
+            {open.map((u) => <a key={u.id} href={`#post-${u.id}`}>{u.name}</a>)}
+          </nav>
+        )}
+        {updates.length === 0 && (
+          <div className="post empty">
+            <h2 className="ptitle">Nothing on the feed yet</h2>
+            <p className="muted">{admin ? "Kick it off above: ask a question, share a win, or introduce two members." : "Questions, wins and intros from E@B members will show up here."}</p>
+          </div>
+        )}
+        {updates.map((u) => <PostCard key={u.id} u={u} members={members} ids={ids} thread={{ answers: answersFor(u.id), admin, viewer, profiles, introMade: introMade(u) }} />)}
+      </section>
+      <aside className="rail">
+        <section className="card">
+          <h3>Upcoming events <Link href="/events">all →</Link></h3>
+          {events.length === 0 && <p className="muted small">Nothing scheduled yet.</p>}
+          {events.map((e) => (
+            <div key={e.id} className="ev">
+              <DateBlock date={e.data.date} />
+              <div>
+                <Link href={`/crm/events/${e.id}`} className="evname">{e.name}</Link>
+                <span className="evmeta">{[e.data.time, e.data.location].filter(Boolean).join(" · ")}</span>
+                {isHttp(e.data.link) && <a className="evmeta" href={e.data.link} target="_blank" rel="noreferrer">Details ↗</a>}
+                <RsvpButton eventId={e.id} me={rsvps.me(e.id)} count={rsvps.count(e.id)} signedIn={!!me} compact />
               </div>
-              <textarea name="notes" rows={4} placeholder="What happened? Blank lines start new paragraphs." />
-              <input name="link" placeholder="Link (optional)" />
-              <div className="row"><button className="btn">Post</button><label className="small muted"><input type="checkbox" name="status" value="Pinned" className="check" /> Pin to top</label></div>
-            </form>
-          )}
-          {updates.length === 0 && <div className="card"><p className="muted">No updates yet.{admin ? " Post the first one above." : ""}</p></div>}
-          {updates.map((u) => (
-            <article key={u.id} className="card post">
-              <div className="head">
-                <h2><Link href={`/crm/updates/${u.id}`}>{u.name}</Link></h2>
-                <div className="row">{u.status === "Pinned" && <span className="pill s-Pinned">Pinned</span>}{u.data.category && <span className="pill">{u.data.category}</span>}</div>
-              </div>
-              <p className="muted small">{[u.data.author, u.data.date || new Date(u.created_at).toISOString().slice(0, 10)].filter(Boolean).join(" · ")}</p>
-              {u.notes.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
-              {u.data.link && /^https?:\/\//i.test(u.data.link) && <p className="small"><a href={u.data.link} target="_blank" rel="noreferrer">{u.data.link}</a></p>}
-            </article>
+            </div>
           ))}
         </section>
-        <aside>
-          <section className="card">
-            <h2>Upcoming events</h2>
-            {events.length === 0 && <p className="muted small">Nothing scheduled yet.</p>}
-            {events.map((e) => (
-              <p key={e.id}><Link href={`/crm/events/${e.id}`}>{e.name}</Link><br />
-                <span className="muted small">{[e.data.date, e.data.time, e.data.location].filter(Boolean).join(" · ")}</span></p>
-            ))}
-            <p className="small"><Link href="/crm/events">View all</Link></p>
-          </section>
-        </aside>
-      </div>
-    </>
+        <section className="card">
+          <h3>Perks <Link href="/perks">all →</Link></h3>
+          {perks.length === 0 && <p className="muted small">No perks confirmed yet.</p>}
+          {perks.map((d) => (
+            <div key={d.id} className="perk">
+              <div><Link href={`/perks/${d.id}`} className="n">{d.name}</Link>{d.data.value && <span className="v">{d.data.value}</span>}
+                <Link href={`/perks/${d.id}`} className="v">How to claim →</Link></div>
+              <ClaimButton dealId={d.id} claimed={claims.mine(d.id)} count={claims.count(d.id)} signedIn={!!me} />
+            </div>
+          ))}
+        </section>
+        <section className="card">
+          <h3>New to E@B <Link href="/directory">directory →</Link></h3>
+          {newest.length === 0 && <p className="muted small">No members yet.</p>}
+          {newest.map((m) => (
+            <div key={m.id} className="mem">
+              <Face name={m.name} src={m.data.avatar} size={34} href={personHref(m.name, ids)} />
+              <div><Link href={personHref(m.name, ids)} className="n">{m.name}</Link><span className="s">{m.data.company || m.data.role}</span></div>
+            </div>
+          ))}
+        </section>
+      </aside>
+    </div>
   );
 }

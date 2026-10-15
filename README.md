@@ -2,15 +2,15 @@
 One app: sign in with Berkeley Google, land on the member feed (club updates, upcoming events). Admin password on top for managing data.
 
 Page map:
-- `/` member feed (updates, upcoming events, Explore links)
+- `/` member feed: composer (admin), typed posts (Ask, Intro, Update, Announcement...), rail with upcoming events, perks and newest members
 - `/perks` confirmed deals with how to claim them; `/perks/<id>` one perk
 - `/events` upcoming and past events with RSVP links
-- `/directory` active members; `/directory/<id>` member profile
+- `/directory` active members; profiles at `/crm/members/<id>` (expertise, posts, intros)
 - `/resources` published guides, tools, templates and links
 - `/finances` budget, spending, sponsor money and reimbursements (visible to all members)
 - `/crm` every record type (admin edits here), `/crm/search` global search results, `/admin` import and cleanup
 
-One navbar: the top bar holds the module links, CRM, a built-in search input (Enter searches every record type) and Admin. The CRM has no second tab bar; its dashboard cards link to each type.
+One navbar: the top bar holds Directory, Events, Perks and Resources (plus CRM and Finances for admins), a built-in search input (Enter searches every record type), Sign in / your name with a notifications bell, and Admin. "Sign in" is a lightweight name + email identity (cookie `eab_identity`, unverified) used for claiming perks, RSVPs and answers until Google sign-in ships; it does not grant access. The CRM has no second tab bar; its dashboard cards link to each type.
 
 
 Simple CRM for Entrepreneurs at Berkeley: members, alumni, deals, VC partners, and warm-intro contacts (who at E@B knows an important person). Next.js 15 (App Router) + Postgres + Auth.js Google sign-in.
@@ -36,6 +36,6 @@ No env needed locally: it uses an embedded Postgres (PGlite) in ./.data and seed
 - Domain: add `members` CNAME in Wix DNS to Vercel, add the domain in Vercel, and use `https://members.entrepreneursatberkeley.com/api/auth/callback/google` as the Google redirect URI.
 - (old note) Dev login is disabled when NODE_ENV=production.
 - Schema: one `records` table (type, name, status, data jsonb, notes). Fields per type live in `lib/schema.ts`; add a field there and it shows up in forms, lists and CSV export.
-- Data: real rosters live in `seed/*.json` (members, alumni, events, updates, resources, finance; prospects are derived from `seed/deals.json` + `seed/recruit.json`). Load them with `npm run seed:load` (`--type=members` for one type, `--dry-run` to preview), or let a fresh local DB auto-seed on first request. Never hand-edit the database for onboarding. The current seed is placeholder: 9 members/exec from the public site (no emails yet), 6 alumni companies (founder names TBD), 40 Prospects (unconfirmed targets from the outreach sheets; Deals starts empty). No VC partners, warm intros, events, updates, resources or finance entries are seeded: nobody's real relationships, links or dollar amounts were invented. Member photos (`avatar`) and event RSVP links (`rsvp`) are optional URL fields.
+- Data: real rosters live in `seed/*.json` (members, alumni, events, updates, resources, finance; prospects are derived from `seed/deals.json` + `seed/recruit.json`). Load them with `npm run seed:load` (`--type=members` for one type, `--dry-run` to preview), or let a fresh local DB auto-seed on first request. Never hand-edit the database for onboarding. The current seed is placeholder: 9 members/exec from the public site (no emails yet), 6 alumni companies (founder names TBD), 40 Prospects (unconfirmed targets from the outreach sheets; Deals starts empty). 4 sample feed posts (`seed/updates.json`) show each post type and can be deleted once real posts exist. No VC partners, warm intros, events, resources or finance entries are seeded: nobody's real relationships, links or dollar amounts were invented. Member photos (`avatar`) and event RSVP links (`rsvp`) are optional URL fields.
 - Agents / API: see AGENTS.md. `/api/records` is a JSON API (list, get, create, update, delete) authenticated with `Authorization: Bearer <ADMIN_PASSWORD>`.
 - Transfer: standard Postgres + Next.js, no vendor lock-in. Export CSV per tab at /api/export/<type>.

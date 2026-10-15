@@ -7,21 +7,22 @@ Private members site for Entrepreneurs at Berkeley (members.entrepreneursatberke
 
 Stack: Next.js 15 App Router, React 19, NextAuth v5 beta (Google sign-in, members only), Postgres via `DATABASE_URL` in production, embedded PGlite in `./.data` locally. No ORM.
 
-**Invariant: one table.** Every entity is a row in `records(id, type, name, status, data jsonb, notes, created_at, updated_at)`. `type` is a slug from `lib/schema.ts`; `data` holds that type's fields as strings; long text (update body, event description) goes in `notes`. Do not add tables or per-type columns.
+**Invariant: one table.** Every entity is a row in `records(id, type, name, status, data jsonb, notes, created_at, updated_at)`. `type` is a slug from `lib/schema.ts`; `data` holds that type's fields as strings; long text (update body, event description) goes in `notes`. Do not add per-type columns. The only other tables hold per-person activity on records, created in `lib/db.ts` init (one `create table if not exists` call each): `comments` (answers/replies on `updates` posts), `claims` (perk claims: deal_id + member_email, unique) and `rsvps` (event_id + member_email + going, unique). Do not add more without the maintainer's approval.
 
 ## Pages
 Every page reads the same `records` table. Member pages are read-only; editing happens in `/crm` (admin) or the API.
 
-There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with the module links, a built-in search input (plain GET form to `/crm/search?q=`) and the Admin link. The CRM has no tab bar of its own: `/crm` is a grid of per-type cards, list pages link back with "← CRM", detail pages link back to their list.
+There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Directory, Events, Perks, Resources (CRM and Finances only when the admin cookie is set; the pages stay reachable by URL), a built-in search input (plain GET form to `/crm/search?q=`) and the Admin link. The CRM has no tab bar of its own: `/crm` is a grid of per-type cards, list pages link back with "← CRM", detail pages link back to their list.
 
 | Route | Module | Data |
 |---|---|---|
-| `/` | Feed: updates, upcoming-events rail, Explore links | `updates`, `events` |
-| `/perks`, `/perks/<id>` | Perks: how to claim each confirmed deal | `deals` with status Confirmed or Active |
-| `/events` | Events: upcoming (date chip, RSVP) and last 12 past | `events` (Upcoming / Past) |
-| `/directory`, `/directory/<id>` | Directory: member grid and profiles | `members` with status Active or Exec |
+| `/` | Feed: composer (admin), typed post cards, rail with upcoming events, perks, newest members | `updates`, `events`, `deals`, `members` |
+| `/perks`, `/perks/<id>` | Perks: how to claim each confirmed deal, Claim button and claim count | `deals` with status Confirmed or Active |
+| `/events` | Events: upcoming (date chip, Going / Not going with count, external RSVP link) and last 12 past | `events` (Upcoming / Past) |
+| `/directory` | Directory: member grid (expertise chips); cards open the member profile (`/directory/<id>` redirects there) | `members` with status Active or Exec |
 | `/resources` | Resources grouped by category | `resources` with status Published (drafts only in CRM) |
 | `/finances` | Finances: Budget / Spent / Sponsor money / Reimbursed totals + all entries | `finance` |
+| `/crm/members/<id>` | Member profile: building, expertise, posts, intros they can make, perks claimed; admins edit here | `members`, `updates`, `pocs` |
 | `/crm`, `/crm/<type>`, `/crm/<type>/<id>` | CRM: lists, filters, edit forms (admin) | every type |
 | `/crm/search` | Search results for the top-bar search input (no form of its own) | every type |
 | `/admin` | Admin: CSV import, clear a tab | every type |
@@ -66,6 +67,24 @@ Auth: `Authorization: Bearer <token>` where the token is the `ADMIN_PASSWORD` (l
     # Import CSV (same columns; rows are appended, nothing is overwritten)
     curl -H "$H" -H 'content-type: text/csv' --data-binary @members.csv "$BASE/api/import/members"   # -> {"imported": N}
 
+Feed answers (table `comments`; reads need a member session, the admin cookie or the bearer token):
+
+    curl -H "$H" "$BASE/api/comments?post_id=17"                       # -> {"count": N, "comments": [...]} (hidden ones left out)
+    curl -H "$H" -H 'content-type: application/json' -X POST "$BASE/api/comments" -d '{"post_id":17,"author":"Maya Sofer","body":"Tabling worked."}'
+    curl -H "$H" -H 'content-type: application/json' -X PATCH "$BASE/api/comments/3" -d '{"best":true}'   # admin; clears best on the post's other answers
+    curl -H "$H" -H 'content-type: application/json' -X PATCH "$BASE/api/comments/3" -d '{"hidden":true}' # admin
+    curl -H "$H" -X DELETE "$BASE/api/comments/3"                                                        # admin
+
+Claims and RSVPs belong to an identity: the `eab_identity` cookie (`{"name","email"}`, set by the top bar's "Sign in"; unverified, until Google sign-in ships) or else the signed-in session. With the bearer token you may act for someone by adding `member_email`/`member_name` to the body.
+
+    ID="Cookie: eab_identity=%7B%22name%22%3A%22Maya%20Sofer%22%2C%22email%22%3A%22maya%40example.com%22%7D"
+    curl -H "$H" -H "$ID" "$BASE/api/claims"                                           # -> {"email", "count", "claims": [{deal_id, claimed_at}]}
+    curl -H "$H" -H "$ID" -H 'content-type: application/json' -X POST "$BASE/api/claims" -d '{"deal_id":42}'   # -> {"deal_id","claimed":true,"count"}
+    curl -H "$H" -H "$ID" "$BASE/api/rsvps?event_id=7"                                  # -> {"event_id","going":<count>,"me":true|false|null}
+    curl -H "$H" -H "$ID" -H 'content-type: application/json' -X POST "$BASE/api/rsvps" -d '{"event_id":7,"going":true}'   # going=false un-RSVPs
+
+The top-bar bell is computed per request (no table): events the identity is going to today or tomorrow, and perks confirmed or edited in the last 7 days they have not claimed. "Read" state is kept in the browser's localStorage.
+
 Types and their fields/statuses: read `lib/schema.ts` (slugs: members, alumni, deals, prospects, vcs, pocs, updates, events, resources, finance). A 400 response lists the allowed types, statuses or field keys.
 
 ## Data onboarding
@@ -79,10 +98,10 @@ It replaces every row of each loaded type, so CRM edits to those types are lost.
 
 Shapes (every key optional except `name`; values are strings; unknown keys are stored but not shown):
 
-    seed/members.json    [{ "name","status","role","email","year","major","cohort","company","linkedin","avatar","notes" }]
+    seed/members.json    [{ "name","status","role","email","year","major","cohort","company","linkedin","avatar","expert_tags","notes" }]   # expert_tags: "Fundraising, Hiring" (up to 3)
     seed/alumni.json     [{ "name","status","company","title","email","grad_year","cohort","raised","can_help","linkedin","notes" }]
     seed/events.json     [{ "name","status","date","time","location","link","rsvp","category","notes" }]
-    seed/updates.json    [{ "name","status","author","date","category","link","notes" }]
+    seed/updates.json    [{ "name","status","author","date","category","link","member_a","member_b","notes" }]   # category Ask|Intro|Update|Announcement|...; name is the title or the question
     seed/resources.json  [{ "name","status","url","category","owner","notes" }]          # status Published|Draft; notes = description
     seed/finance.json    [{ "name","status","kind","amount","period","counterparty","notes" }]  # amount is text, e.g. "$500"; period YYYY-MM-DD
     seed/deals.json, seed/recruit.json   outreach research; turned into Prospects (lib/seed.mjs). Do not reshape.
@@ -94,8 +113,9 @@ Dates are `YYYY-MM-DD`. Statuses and select options must match `lib/schema.ts`. 
 - Never fabricate people, companies or relationships in seed files or via the API. Leave a field empty rather than guess.
 - Writes are admin-only: the admin cookie in the UI (`requireAdmin` in `app/actions.ts`), the bearer token in the API.
 - Site access is `isMemberEmail` (`lib/access.ts`): a Members record with status Active or Exec and a matching email, or an address in `ALLOWED_EMAILS`. Deactivating or deleting the member locks them out.
+- Intro posts (category Intro) name `member_a` and `member_b`. An admin's "Request intro" creates a Warm intro (`pocs`: org = member_b, E@B contact = member_a) unless a non-Dropped one exists; then the post shows "Intro made".
 - Prospects are unconfirmed. Only an admin promotes one to a Deal.
-- Navigation: one top nav: Perks, Events, Directory, Resources, Finances, CRM, a search input, Admin. No CRM tab bar or other second nav. The home page's "Explore" line is plain text links, not a second nav. Do not add more nav surfaces.
+- Navigation: one top nav: Directory, Events, Perks, Resources, CRM and Finances (admins only), a search input, Admin. No CRM tab bar or other second nav. Do not add more nav surfaces.
 - Perks are not a type: they are `deals` with status Confirmed or Active. Confirm a deal (or promote a prospect) to publish a perk.
 - No new npm dependencies without the maintainer's approval.
 

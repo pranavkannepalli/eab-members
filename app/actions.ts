@@ -44,14 +44,19 @@ export async function promoteProspect(id: number) {
   redirect(`/crm/deals/${id}`);
 }
 
-// Home feed composer. Body goes in notes, like every other "updates" record.
+// Home feed composer: one textarea. Its first line is the title (the question, for an Ask); the rest is the body (notes).
 export async function postUpdate(fd: FormData) {
   await requireAdmin();
   const get = (k: string) => String(fd.get(k) || "").trim();
-  const name = get("name");
-  if (!name) throw new Error("Title is required");
-  const data = { author: get("author"), date: get("date"), category: get("category"), link: get("link") };
-  await query("insert into records(type,name,status,data,notes) values('updates',$1,$2,$3,$4)", [name, get("status") === "Pinned" ? "Pinned" : "Open", JSON.stringify(data), String(fd.get("notes") || "").trim()]);
+  const text = String(fd.get("text") || "").replace(/\r\n/g, "\n").trim();
+  if (!text) throw new Error("Write something first");
+  const [first, ...rest] = text.split("\n");
+  const long = first.trim().length > 140;
+  const name = long ? first.trim().slice(0, 137).trimEnd() + "…" : first.trim();
+  const notes = long ? text : rest.join("\n").trim();
+  const date = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(new Date());
+  const data = { author: get("author"), date, category: get("category"), link: get("link") };
+  await query("insert into records(type,name,status,data,notes) values('updates',$1,$2,$3,$4)", [name, get("status") === "Pinned" ? "Pinned" : "Open", JSON.stringify(data), notes]);
   revalidatePath("/");
 }
 
@@ -83,4 +88,16 @@ export async function clearType(fd: FormData) {
   await query("delete from records where type=$1", [slug]);
   revalidatePath("/", "layout");
   redirect(`/admin?msg=${encodeURIComponent("Cleared " + slug)}`);
+}
+
+// Intro post -> warm-intro record (pocs) for the pair, unless one already exists that was not dropped.
+export async function requestIntro(postId: number) {
+  await requireAdmin();
+  const [post] = await query("select * from records where id=$1 and type='updates'", [postId]);
+  const a = String(post?.data.member_a || "").trim(), b = String(post?.data.member_b || "").trim();
+  if (!a || !b) throw new Error("This post does not name two members");
+  const existing = await query("select id from records where type='pocs' and status<>'Dropped' and lower(trim(data->>'eab_contact'))=lower($1) and lower(trim(data->>'org'))=lower($2) limit 1", [a, b]);
+  if (existing.length === 0)
+    await query("insert into records(type,name,status,data,notes) values('pocs',$1,'Reached out',$2,'')", [b, JSON.stringify({ kind: "Other", org: b, eab_contact: a, relationship: post.name })]);
+  revalidatePath("/");
 }
