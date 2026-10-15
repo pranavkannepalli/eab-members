@@ -10,7 +10,7 @@ export default async function Dashboard() {
   const n = (s: string) => counts.find((c) => c.type === s)?.n ?? 0;
   return (
     <>
-      <p className="eyebrow">CRM</p><h1>Overview</h1><p className="muted">Members, alumni, deals and investors in one place.</p>
+      <p className="eyebrow">CRM</p><h1>Overview</h1><p className="muted">Admin console. Member-facing views live in the top bar.</p>
       <div className="grid">
         {TYPES.map((t) => (
           <Link key={t.slug} href={`/crm/${t.slug}`} className="card stat"><b>{n(t.slug)}</b><span>{t.label}</span></Link>

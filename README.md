@@ -8,7 +8,9 @@ Page map:
 - `/directory` active members; `/directory/<id>` member profile
 - `/resources` published guides, tools, templates and links
 - `/finances` budget, spending, sponsor money and reimbursements (visible to all members)
-- `/crm` every record type (admin edits here), `/crm/search` global search, `/admin` import and cleanup
+- `/crm` every record type (admin edits here), `/crm/search` global search results, `/admin` import and cleanup
+
+One navbar: the top bar holds the module links, CRM, a built-in search input (Enter searches every record type) and Admin. The CRM has no second tab bar; its dashboard cards link to each type.
 
 
 Simple CRM for Entrepreneurs at Berkeley: members, alumni, deals, VC partners, and warm-intro contacts (who at E@B knows an important person). Next.js 15 (App Router) + Postgres + Auth.js Google sign-in.
@@ -28,7 +30,7 @@ No env needed locally: it uses an embedded Postgres (PGlite) in ./.data and seed
 ## Notes
 - Admin: /admin is protected by the ADMIN_PASSWORD env var. Admin mode is the only way to add, edit, delete, promote or import. Without Google configured, the admin password is the only way into the site.
 - Reserved areas: a resume book is planned but not built. It will use the same login and admin password; add it as a new record type in `lib/schema.ts` or a new route when scoped. (Finances and the perks directory are now built: `/finances` reads the `finance` type, `/perks` reads confirmed `deals`.)
-- Feed: Updates and Events are ordinary record types (body/description in notes). Admins post from the home page composer or the CRM tabs.
+- Feed: Updates and Events are ordinary record types (body/description in notes). Admins post from the home page composer or the CRM.
 - Prospects vs Deals: Deals are confirmed only. Outreach targets live in Prospects; an admin promotes one to a Deal explicitly.
 - Access: Google sign-in, members only. A person gets in if a Member record (status Active or Exec) has their Google email. Checked on every page load, so setting a member to Inactive or deleting them locks them out. `ALLOWED_EMAILS` is only a bootstrap list for the first admins. The seeded members have no emails yet: add them in /admin (or CSV import) before inviting anyone.
 - Domain: add `members` CNAME in Wix DNS to Vercel, add the domain in Vercel, and use `https://members.entrepreneursatberkeley.com/api/auth/callback/google` as the Google redirect URI.

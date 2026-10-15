@@ -12,6 +12,8 @@ Stack: Next.js 15 App Router, React 19, NextAuth v5 beta (Google sign-in, member
 ## Pages
 Every page reads the same `records` table. Member pages are read-only; editing happens in `/crm` (admin) or the API.
 
+There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with the module links, a built-in search input (plain GET form to `/crm/search?q=`) and the Admin link. The CRM has no tab bar of its own: `/crm` is a grid of per-type cards, list pages link back with "← CRM", detail pages link back to their list.
+
 | Route | Module | Data |
 |---|---|---|
 | `/` | Feed: updates, upcoming-events rail, Explore links | `updates`, `events` |
@@ -21,7 +23,7 @@ Every page reads the same `records` table. Member pages are read-only; editing h
 | `/resources` | Resources grouped by category | `resources` with status Published (drafts only in CRM) |
 | `/finances` | Finances: Budget / Spent / Sponsor money / Reimbursed totals + all entries | `finance` |
 | `/crm`, `/crm/<type>`, `/crm/<type>/<id>` | CRM: lists, filters, edit forms (admin) | every type |
-| `/crm/search` | Search across all types | every type |
+| `/crm/search` | Search results for the top-bar search input (no form of its own) | every type |
 | `/admin` | Admin: CSV import, clear a tab | every type |
 
 Finance totals parse the leading number of `amount` (`"$1,200"` -> 1200). Entries without a number are skipped and shown as "n uncounted" on their card. Totals count: Budget = Budget line in Planned/Committed/Paid; Spent = Expense Paid; Sponsor money = Sponsorship Committed/Paid; Reimbursed = Reimbursement Reimbursed.
@@ -93,7 +95,7 @@ Dates are `YYYY-MM-DD`. Statuses and select options must match `lib/schema.ts`. 
 - Writes are admin-only: the admin cookie in the UI (`requireAdmin` in `app/actions.ts`), the bearer token in the API.
 - Site access is `isMemberEmail` (`lib/access.ts`): a Members record with status Active or Exec and a matching email, or an address in `ALLOWED_EMAILS`. Deactivating or deleting the member locks them out.
 - Prospects are unconfirmed. Only an admin promotes one to a Deal.
-- Navigation: one top nav: Perks, Events, Directory, Resources, Finances, CRM, Search, Admin. The home page's "Explore" line is plain text links, not a second nav. Do not add more nav surfaces.
+- Navigation: one top nav: Perks, Events, Directory, Resources, Finances, CRM, a search input, Admin. No CRM tab bar or other second nav. The home page's "Explore" line is plain text links, not a second nav. Do not add more nav surfaces.
 - Perks are not a type: they are `deals` with status Confirmed or Active. Confirm a deal (or promote a prospect) to publish a perk.
 - No new npm dependencies without the maintainer's approval.
 
