@@ -4,7 +4,7 @@ import { query, Rec } from "@/lib/db";
 import { bySlug } from "@/lib/schema";
 import { saveRecord, deleteRecord, promoteProspect } from "@/app/actions";
 import { isAdmin } from "@/lib/admin";
-import { RecordForm } from "@/components";
+import { RecordForm, Mentions } from "@/components";
 export const dynamic = "force-dynamic";
 
 export default async function Detail({ params }: { params: Promise<{ type: string; id: string }> }) {
@@ -13,8 +13,6 @@ export default async function Detail({ params }: { params: Promise<{ type: strin
   if (!cfg || !/^\d+$/.test(id)) notFound();
   const [rec]: Rec[] = await query("select * from records where id=$1 and type=$2", [Number(id), type]);
   if (!rec) notFound();
-  // Cross-links: other records that mention this name (e.g. a PoC named on a VC or deal).
-  const related: Rec[] = await query("select * from records where id<>$1 and (data::text ilike $2 or notes ilike $2) order by type, name limit 12", [rec.id, `%${rec.name}%`]);
   const admin = await isAdmin();
   return (
     <>
@@ -26,11 +24,7 @@ export default async function Detail({ params }: { params: Promise<{ type: strin
       {type === "prospects" && <p className="notice">Prospect: not a confirmed deal. Nothing has been agreed with this company.</p>}
       <p className="muted small">Updated {new Date(rec.updated_at).toLocaleString()}</p>
       <RecordForm cfg={cfg} rec={rec} action={saveRecord.bind(null, type, rec.id)} />
-      {related.length > 0 && (
-        <section className="card"><h2>Mentioned elsewhere</h2>
-          {related.map((r) => <p key={r.id}><Link href={`/crm/${r.type}/${r.id}`}>{r.name}</Link> <span className="muted">{bySlug(r.type)?.singular}</span></p>)}
-        </section>
-      )}
+      <Mentions rec={rec} />
     </>
   );
 }

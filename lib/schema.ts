@@ -15,6 +15,7 @@ export const TYPES: TypeCfg[] = [
       { key: "year", label: "Year", kind: "select", options: ["Freshman", "Sophomore", "Junior", "Senior", "Grad"] },
       { key: "major", label: "Major" }, { key: "cohort", label: "Cohort (e.g. Fall 2026)" },
       { key: "company", label: "Building / company" }, { key: "linkedin", label: "LinkedIn", kind: "url" },
+      { key: "avatar", label: "Photo URL", kind: "url" },
     ],
     columns: ["role", "year", "major", "cohort"], filterField: "year",
   },
@@ -96,10 +97,31 @@ export const TYPES: TypeCfg[] = [
     statuses: ["Upcoming", "Past", "Cancelled"],
     fields: [
       { key: "date", label: "Date", kind: "date" }, { key: "time", label: "Time" }, { key: "location", label: "Location" },
-      { key: "link", label: "Link", kind: "url" },
+      { key: "link", label: "Link", kind: "url" }, { key: "rsvp", label: "RSVP link", kind: "url" },
       { key: "category", label: "Category", kind: "select", options: ["Social", "Workshop", "Recruiting", "Demo day", "Other"] },
     ],
     columns: ["date", "location", "category"], filterField: "category",
+  },
+  {
+    // Description lives in the record's notes.
+    slug: "resources", label: "Resources", singular: "Resource", blurb: "Guides, tools, templates and links the club keeps.",
+    statuses: ["Published", "Draft"],
+    fields: [
+      { key: "url", label: "URL", kind: "url" },
+      { key: "category", label: "Category", kind: "select", options: ["Guide", "Tool", "Template", "Document", "Link", "Media"] },
+      { key: "owner", label: "Maintained by" },
+    ],
+    columns: ["category", "owner", "url"], filterField: "category",
+  },
+  {
+    slug: "finance", label: "Finances", singular: "Finance entry", blurb: "Club budget, spending, sponsor money and reimbursements.",
+    statuses: ["Planned", "Committed", "Paid", "Reimbursed"],
+    fields: [
+      { key: "kind", label: "Kind", kind: "select", options: ["Budget line", "Expense", "Sponsorship", "Reimbursement"] },
+      { key: "amount", label: "Amount (e.g. $500)" }, { key: "period", label: "Period / date", kind: "date" },
+      { key: "counterparty", label: "Vendor / recipient / funder" },
+    ],
+    columns: ["kind", "amount", "period", "counterparty"], filterField: "kind",
   },
 ];
 
