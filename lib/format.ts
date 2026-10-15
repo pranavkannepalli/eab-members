@@ -53,3 +53,6 @@ export function postKind(category?: string): "ask" | "update" | "intro" | "ann" 
 
 export const firstLine = (s: string) => s.split("\n").map((l) => l.trim()).find(Boolean) || "";
 export const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? one : many}`;
+
+/** "Fundraising, Hiring, B2B sales" -> up to 3 tags. */
+export const tags = (s?: string) => (s || "").split(",").map((t) => t.trim()).filter(Boolean).slice(0, 3);

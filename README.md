@@ -5,7 +5,7 @@ Page map:
 - `/` member feed: composer (admin), typed posts (Ask, Intro, Update, Announcement...), rail with upcoming events, perks and newest members
 - `/perks` confirmed deals with how to claim them; `/perks/<id>` one perk
 - `/events` upcoming and past events with RSVP links
-- `/directory` active members; `/directory/<id>` member profile
+- `/directory` active members; profiles at `/crm/members/<id>` (expertise, posts, intros)
 - `/resources` published guides, tools, templates and links
 - `/finances` budget, spending, sponsor money and reimbursements (visible to all members)
 - `/crm` every record type (admin edits here), `/crm/search` global search results, `/admin` import and cleanup

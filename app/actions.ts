@@ -89,3 +89,15 @@ export async function clearType(fd: FormData) {
   revalidatePath("/", "layout");
   redirect(`/admin?msg=${encodeURIComponent("Cleared " + slug)}`);
 }
+
+// Intro post -> warm-intro record (pocs) for the pair, unless one already exists that was not dropped.
+export async function requestIntro(postId: number) {
+  await requireAdmin();
+  const [post] = await query("select * from records where id=$1 and type='updates'", [postId]);
+  const a = String(post?.data.member_a || "").trim(), b = String(post?.data.member_b || "").trim();
+  if (!a || !b) throw new Error("This post does not name two members");
+  const existing = await query("select id from records where type='pocs' and status<>'Dropped' and lower(trim(data->>'eab_contact'))=lower($1) and lower(trim(data->>'org'))=lower($2) limit 1", [a, b]);
+  if (existing.length === 0)
+    await query("insert into records(type,name,status,data,notes) values('pocs',$1,'Reached out',$2,'')", [b, JSON.stringify({ kind: "Other", org: b, eab_contact: a, relationship: post.name })]);
+  revalidatePath("/");
+}

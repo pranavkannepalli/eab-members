@@ -7,6 +7,7 @@ import { today, upcomingEvents, isHttp, relTime, postTime, postKind } from "@/li
 import { Face, personHref } from "@/ui/face";
 import { Composer } from "@/ui/composer";
 import { Answers, Answer } from "@/ui/answers";
+import { requestIntro } from "@/app/actions";
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -17,7 +18,11 @@ function DateBlock({ date }: { date?: string }) {
 }
 const paragraphs = (s: string) => s.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
-type Thread = { answers: Answer[]; admin: boolean; viewer: string | null; profiles: Record<string, string> };
+type Thread = { answers: Answer[]; admin: boolean; viewer: string | null; profiles: Record<string, string>; introMade: boolean };
+
+function MemberChip({ name, members, ids }: { name: string; members: Map<string, Rec>; ids: Map<string, number> }) {
+  return <Link href={personHref(name, ids)} className="mchip"><Face name={name} src={members.get(name.trim().toLowerCase())?.data.avatar} size={22} />{name}</Link>;
+}
 
 function PostCard({ u, members, ids, thread }: { u: Rec; members: Map<string, Rec>; ids: Map<string, number>; thread: Thread }) {
   const author = u.data.author || "E@B";
@@ -36,6 +41,13 @@ function PostCard({ u, members, ids, thread }: { u: Rec; members: Map<string, Re
         {u.data.category && <span className={`badge b-${kind}`}>{u.data.category}</span>}
       </header>
       <h2 className={kind === "ask" ? "askq" : "ptitle"}><Link href={`/crm/updates/${u.id}`}>{u.name}</Link></h2>
+      {kind === "intro" && u.data.member_a && u.data.member_b && (
+        <div className="introrow">
+          <MemberChip name={u.data.member_a} members={members} ids={ids} /><span className="muted">↔</span><MemberChip name={u.data.member_b} members={members} ids={ids} />
+          {thread.introMade ? <span className="madepill">Intro made ✓</span>
+            : thread.admin && <form action={requestIntro.bind(null, u.id)}><button className="btn small">Request intro</button></form>}
+        </div>
+      )}
       {u.notes && <div className="pbody">{paragraphs(u.notes).map((p, i) => <p key={i}>{p}</p>)}</div>}
       {isHttp(u.data.link) && <a className="linkchip" href={u.data.link} target="_blank" rel="noreferrer">↗ {u.data.link.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "")}</a>}
       <Answers postId={u.id} ask={kind === "ask"} initial={thread.answers} admin={thread.admin} viewer={thread.viewer} profiles={thread.profiles} />
@@ -60,6 +72,9 @@ export default async function Home() {
     ? await query("select id, post_id, author, body, created_at, best from comments where not hidden and post_id = any($1::int[]) order by created_at, id", [updates.map((u) => u.id)])
     : [];
   const answersFor = (id: number) => comments.filter((c) => c.post_id === id).map((c) => ({ ...c, created_at: new Date(c.created_at).toISOString() }));
+  // Intro pairs that already have a warm-intro record (E@B contact = member_a, org = member_b).
+  const pairs = new Set((await query("select data from records where type='pocs' and status<>'Dropped'")).map((p: Rec) => `${(p.data.eab_contact || "").trim().toLowerCase()}|${(p.data.org || "").trim().toLowerCase()}`));
+  const introMade = (u: Rec) => pairs.has(`${(u.data.member_a || "").trim().toLowerCase()}|${(u.data.member_b || "").trim().toLowerCase()}`);
   const profiles = Object.fromEntries([...ids.keys()].map((k) => [k, personHref(k, ids)]));
   // Questions nobody has answered yet, surfaced under the composer.
   const open = updates.filter((u) => u.data.category === "Ask" && !comments.some((c) => c.post_id === u.id)).slice(0, 3);
@@ -80,7 +95,7 @@ export default async function Home() {
             <p className="muted">{admin ? "Kick it off above: ask a question, share a win, or introduce two members." : "Questions, wins and intros from E@B members will show up here."}</p>
           </div>
         )}
-        {updates.map((u) => <PostCard key={u.id} u={u} members={members} ids={ids} thread={{ answers: answersFor(u.id), admin, viewer, profiles }} />)}
+        {updates.map((u) => <PostCard key={u.id} u={u} members={members} ids={ids} thread={{ answers: answersFor(u.id), admin, viewer, profiles, introMade: introMade(u) }} />)}
       </section>
       <aside className="rail">
         <section className="card">

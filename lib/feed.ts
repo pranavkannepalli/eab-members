@@ -1,6 +1,6 @@
 // Shared helpers for the member-facing pages (home feed, perks, events, directory, resources, finances).
 import { query, Rec } from "@/lib/db";
-export { relTime, postTime, initials, avatarColor, postKind, plural } from "@/lib/format";
+export { relTime, postTime, initials, avatarColor, postKind, plural, tags } from "@/lib/format";
 
 export const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(new Date()); // YYYY-MM-DD
 export const isHttp = (u?: string) => !!u && /^https?:\/\//i.test(u);

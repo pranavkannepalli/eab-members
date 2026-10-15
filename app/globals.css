@@ -96,3 +96,17 @@ fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{back
 .answerbox{display:flex;gap:10px;align-items:flex-start}.answerbox textarea{flex:1;font-size:14px;padding:8px 12px;min-height:40px;resize:vertical}.answerbox .btn{border-radius:999px;padding:7px 16px;font-size:13px}.answerbox .btn:disabled{opacity:.5;cursor:default}
 .stillopen{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;background:var(--soft);border:1px solid #d4e4f7;border-radius:12px;padding:10px 14px;font-size:13.5px}
 .stillopen .eyebrow{font-size:11px;font-weight:600;color:var(--blue);margin-right:4px}.stillopen a{color:var(--navy);background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.stillopen a:hover{border-color:var(--sky);text-decoration:none}
+/* ── People: profile, expertise tags, intro chips ──────────────────────────── */
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}.tag{font-size:12px;font-weight:500;color:var(--blue);background:var(--soft);border:1px solid #d4e4f7;padding:2px 10px;border-radius:999px}
+.person .tags{margin-top:6px}
+.mchip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;background:var(--soft);color:var(--navy);padding:3px 12px 3px 3px;border-radius:999px}.mchip:hover{text-decoration:none;box-shadow:0 0 0 1px var(--sky)}
+.introrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 10px}.introrow form{margin-left:auto}
+.btn.small{font-size:12.5px;padding:5px 14px;border-radius:999px}
+.madepill{margin-left:auto;font-size:12px;font-weight:600;color:#fff;background:var(--intro);padding:4px 12px;border-radius:999px}
+.profilepage{max-width:760px;margin:0 auto}.profilepage .card{margin:14px 0}.profilepage .eyebrow{font-size:11.5px;font-weight:600;margin:0 0 8px}
+.profilecard{display:flex;gap:24px;align-items:center;padding:26px}.profilecard h1{font-size:34px;margin:0 0 4px}.profilecard p{margin:4px 0}.profilecard .row{align-items:center}
+.plinks{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;margin-top:10px!important}
+.building{font-size:17px;font-weight:500;margin:0}
+.plist{display:flex;align-items:center;gap:10px;margin:0;padding:8px 0;border-bottom:1px solid #eef2f8}.plist:last-child{border-bottom:0}.plist>a{font-weight:500}.plist .badge,.plist .pill{margin-left:auto}
+.editprofile summary{cursor:pointer;font-weight:500;color:var(--blue)}.editprofile .form{border:0;box-shadow:none;padding:16px 0 0;margin:0}.editprofile>form:last-child{margin-top:12px}
+@media(max-width:800px){.profilecard{flex-direction:column;align-items:flex-start}}

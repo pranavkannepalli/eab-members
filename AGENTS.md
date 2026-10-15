@@ -19,9 +19,10 @@ There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Direct
 | `/` | Feed: composer (admin), typed post cards, rail with upcoming events, perks, newest members | `updates`, `events`, `deals`, `members` |
 | `/perks`, `/perks/<id>` | Perks: how to claim each confirmed deal | `deals` with status Confirmed or Active |
 | `/events` | Events: upcoming (date chip, RSVP) and last 12 past | `events` (Upcoming / Past) |
-| `/directory`, `/directory/<id>` | Directory: member grid and profiles | `members` with status Active or Exec |
+| `/directory` | Directory: member grid (expertise chips); cards open the member profile (`/directory/<id>` redirects there) | `members` with status Active or Exec |
 | `/resources` | Resources grouped by category | `resources` with status Published (drafts only in CRM) |
 | `/finances` | Finances: Budget / Spent / Sponsor money / Reimbursed totals + all entries | `finance` |
+| `/crm/members/<id>` | Member profile: building, expertise, posts, intros they can make, perks claimed; admins edit here | `members`, `updates`, `pocs` |
 | `/crm`, `/crm/<type>`, `/crm/<type>/<id>` | CRM: lists, filters, edit forms (admin) | every type |
 | `/crm/search` | Search results for the top-bar search input (no form of its own) | every type |
 | `/admin` | Admin: CSV import, clear a tab | every type |
@@ -87,10 +88,10 @@ It replaces every row of each loaded type, so CRM edits to those types are lost.
 
 Shapes (every key optional except `name`; values are strings; unknown keys are stored but not shown):
 
-    seed/members.json    [{ "name","status","role","email","year","major","cohort","company","linkedin","avatar","notes" }]
+    seed/members.json    [{ "name","status","role","email","year","major","cohort","company","linkedin","avatar","expert_tags","notes" }]   # expert_tags: "Fundraising, Hiring" (up to 3)
     seed/alumni.json     [{ "name","status","company","title","email","grad_year","cohort","raised","can_help","linkedin","notes" }]
     seed/events.json     [{ "name","status","date","time","location","link","rsvp","category","notes" }]
-    seed/updates.json    [{ "name","status","author","date","category","link","notes" }]   # category Ask|Intro|Update|Announcement|...; name is the title or the question
+    seed/updates.json    [{ "name","status","author","date","category","link","member_a","member_b","notes" }]   # category Ask|Intro|Update|Announcement|...; name is the title or the question
     seed/resources.json  [{ "name","status","url","category","owner","notes" }]          # status Published|Draft; notes = description
     seed/finance.json    [{ "name","status","kind","amount","period","counterparty","notes" }]  # amount is text, e.g. "$500"; period YYYY-MM-DD
     seed/deals.json, seed/recruit.json   outreach research; turned into Prospects (lib/seed.mjs). Do not reshape.
@@ -102,6 +103,7 @@ Dates are `YYYY-MM-DD`. Statuses and select options must match `lib/schema.ts`. 
 - Never fabricate people, companies or relationships in seed files or via the API. Leave a field empty rather than guess.
 - Writes are admin-only: the admin cookie in the UI (`requireAdmin` in `app/actions.ts`), the bearer token in the API.
 - Site access is `isMemberEmail` (`lib/access.ts`): a Members record with status Active or Exec and a matching email, or an address in `ALLOWED_EMAILS`. Deactivating or deleting the member locks them out.
+- Intro posts (category Intro) name `member_a` and `member_b`. An admin's "Request intro" creates a Warm intro (`pocs`: org = member_b, E@B contact = member_a) unless a non-Dropped one exists; then the post shows "Intro made".
 - Prospects are unconfirmed. Only an admin promotes one to a Deal.
 - Navigation: one top nav: Directory, Events, Perks, Resources, CRM and Finances (admins only), a search input, Admin. No CRM tab bar or other second nav. Do not add more nav surfaces.
 - Perks are not a type: they are `deals` with status Confirmed or Active. Confirm a deal (or promote a prospect) to publish a perk.
