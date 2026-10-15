@@ -96,7 +96,7 @@ export const TYPES: TypeCfg[] = [
     statuses: ["Upcoming", "Past", "Cancelled"],
     fields: [
       { key: "date", label: "Date", kind: "date" }, { key: "time", label: "Time" }, { key: "location", label: "Location" },
-      { key: "link", label: "Link", kind: "url" },
+      { key: "link", label: "Link", kind: "url" }, { key: "rsvp", label: "RSVP link", kind: "url" },
       { key: "category", label: "Category", kind: "select", options: ["Social", "Workshop", "Recruiting", "Demo day", "Other"] },
     ],
     columns: ["date", "location", "category"], filterField: "category",

@@ -1,0 +1,48 @@
+import Link from "next/link";
+import { query, Rec } from "@/lib/db";
+import { today, upcomingEvents, isHttp } from "@/lib/feed";
+export const dynamic = "force-dynamic";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// Calendar chip from a YYYY-MM-DD string (parsed by hand so no timezone shifts the day).
+function DateChip({ date }: { date?: string }) {
+  const m = (date || "").match(/^\d{4}-(\d{2})-(\d{2})$/);
+  return <div className="datechip">{m ? <><b>{Number(m[2])}</b><span>{MONTHS[Number(m[1]) - 1]}</span></> : <span>TBD</span>}</div>;
+}
+const firstLine = (s: string) => s.split("\n").map((l) => l.trim()).find(Boolean) || "";
+
+export default async function Events() {
+  const upcoming = await upcomingEvents(today(), { limit: 100, undated: true });
+  const past: Rec[] = await query("select * from records where type='events' and status='Past' order by data->>'date' desc nulls last, created_at desc limit 12");
+  return (
+    <>
+      <p className="eyebrow">E@B Members</p>
+      <h1>Events</h1>
+      <h2 className="eyebrow section">Upcoming</h2>
+      {upcoming.length === 0 && <div className="card"><p className="muted">Nothing scheduled yet.</p></div>}
+      {upcoming.map((e) => (
+        <article key={e.id} className="card event">
+          <DateChip date={e.data.date} />
+          <div>
+            <div className="head">
+              <h2><Link href={`/crm/events/${e.id}`}>{e.name}</Link></h2>
+              {e.data.category && <span className="pill">{e.data.category}</span>}
+            </div>
+            <p className="muted small">{[e.data.time, e.data.location].filter(Boolean).join(" · ")}</p>
+            {e.notes && <p className="oneline">{firstLine(e.notes)}</p>}
+            {isHttp(e.data.rsvp) && <p><a className="btn" href={e.data.rsvp} target="_blank" rel="noreferrer">RSVP</a></p>}
+          </div>
+        </article>
+      ))}
+      <h2 className="eyebrow section">Past</h2>
+      {past.length === 0 && <p className="muted small">No past events yet.</p>}
+      {past.length > 0 && (
+        <table><tbody>
+          {past.map((e) => (
+            <tr key={e.id}><td className="muted">{e.data.date}</td><td><Link href={`/crm/events/${e.id}`}>{e.name}</Link></td><td className="muted">{e.data.location}</td><td>{e.data.category && <span className="pill">{e.data.category}</span>}</td></tr>
+          ))}
+        </tbody></table>
+      )}
+    </>
+  );
+}

@@ -4,9 +4,9 @@ import { bySlug } from "@/lib/schema";
 import { isAdmin } from "@/lib/admin";
 import { auth } from "@/auth";
 import { postUpdate } from "@/app/actions";
+import { today, upcomingEvents } from "@/lib/feed";
 export const dynamic = "force-dynamic";
 
-const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(new Date()); // YYYY-MM-DD
 const STATS: [string, string][] = [["members", "Members"], ["alumni", "Alumni"], ["deals", "Deals"], ["pocs", "Warm intros"]];
 
 export default async function Home() {
@@ -14,8 +14,7 @@ export default async function Home() {
   const updates: Rec[] = await query(
     `select * from records where type='updates' and status<>'Archived'
      order by (status='Pinned') desc, coalesce(nullif(data->>'date',''), to_char(created_at,'YYYY-MM-DD')) desc, created_at desc limit 20`);
-  const events: Rec[] = await query(
-    "select * from records where type='events' and status='Upcoming' and coalesce(data->>'date','')>=$1 order by data->>'date', data->>'time' limit 6", [now]);
+  const events = await upcomingEvents(now);
   const counts = await query("select type, count(*)::int n from records where type in ('members','alumni','deals','pocs') group by type");
   const admin = await isAdmin();
   const me = admin ? (await auth())?.user : null;

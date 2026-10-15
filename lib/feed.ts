@@ -1,5 +1,5 @@
 // Shared helpers for the member-facing pages (home feed, perks, events, directory, resources, finances).
-import { Rec } from "@/lib/db";
+import { query, Rec } from "@/lib/db";
 
 export const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(new Date()); // YYYY-MM-DD
 export const isHttp = (u?: string) => !!u && /^https?:\/\//i.test(u);
@@ -13,4 +13,12 @@ export function groupBy(rows: Rec[], key: string, order: string[] = [], fallback
     groups.set(g, [...(groups.get(g) ?? []), r]);
   }
   return [...groups].filter(([, rs]) => rs.length > 0);
+}
+
+/** Upcoming events from `from` (YYYY-MM-DD) on, nearest first. Undated ones are left out unless asked for, then listed last. */
+export function upcomingEvents(from: string, { limit = 6, undated = false } = {}): Promise<Rec[]> {
+  const dated = "coalesce(data->>'date','')>=$1";
+  return query(
+    `select * from records where type='events' and status='Upcoming' and ${undated ? `(${dated} or coalesce(data->>'date','')='')` : dated}
+     order by ${undated ? "(coalesce(data->>'date','')='')," : ""} data->>'date', data->>'time' limit ${Number(limit)}`, [from]);
 }

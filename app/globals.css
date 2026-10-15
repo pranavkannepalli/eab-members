@@ -45,3 +45,6 @@ fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{back
 @media(max-width:800px){.grid.four{grid-template-columns:1fr 1fr}.feed{grid-template-columns:1fr}.feed aside{position:static}.feed .row{flex-wrap:wrap}}
 .eyebrow.section{margin:28px 0 -4px}.pre{white-space:pre-wrap}
 .claim{background:var(--soft);border-radius:12px;padding:12px 16px;margin:12px 0}.claim p{margin:4px 0}.claim .eyebrow{margin:0}
+.event{display:flex;gap:18px;align-items:flex-start}.event>div:last-child{flex:1;min-width:0}.event h2{margin:0}.event p{margin:6px 0}
+.datechip{flex:none;width:58px;text-align:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;padding-bottom:6px}.datechip b{display:block;font-size:24px;font-weight:400;padding-top:6px}.datechip span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.oneline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
