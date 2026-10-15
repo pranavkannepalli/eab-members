@@ -26,6 +26,7 @@ export default async function Home() {
       <div className="grid four">
         {STATS.map(([t, label]) => <div key={t} className="card stat"><b>{counts.find((c) => c.type === t)?.n ?? 0}</b><span>{label}</span></div>)}
       </div>
+      <p className="muted small explore">Explore: <Link href="/perks">Perks</Link> · <Link href="/events">Events</Link> · <Link href="/directory">Directory</Link> · <Link href="/resources">Resources</Link></p>
       <div className="feed">
         <section>
           {admin && (

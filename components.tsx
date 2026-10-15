@@ -12,6 +12,11 @@ export async function Nav({ admin }: { admin?: boolean }) {
     <header className="top">
       <Link href="/" className="brand"><img src="/logo.png" alt="" width={34} height={34} /><span>Entrepreneurs at Berkeley <b>Members</b></span></Link>
       <nav>
+        <Link href="/perks">Perks</Link>
+        <Link href="/events">Events</Link>
+        <Link href="/directory">Directory</Link>
+        <Link href="/resources">Resources</Link>
+        <Link href="/finances">Finances</Link>
         <Link href="/crm">CRM</Link>
         <Link href="/crm/search">Search</Link>
         <Link href={a ? "/admin" : "/admin/login"} className="adminlink">{a ? "Admin" : s?.user?.email ? "Admin login" : "Admin"}</Link>
