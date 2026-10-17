@@ -1,11 +1,12 @@
 // Load seed/*.json into the database (replaces rows of each loaded type).
-//   node scripts/seed-load.mjs                 members, alumni, events, updates, resources, finance + prospects (re-derived)
+//   node scripts/seed-load.mjs                 members, alumni, events, updates, resources, finance
+// Deals are never touched: they are managed on the site (/deals), and re-deriving them would clobber real confirmed deals.
 //   node scripts/seed-load.mjs --type=members  one type only
 //   node scripts/seed-load.mjs --dry-run       print counts, write nothing
 // Uses DATABASE_URL (env or .env) for Postgres, else the local PGlite DB in LOCAL_DB_DIR or ./.data/pg.
 // Stop `npm run dev` first when using the local DB: PGlite allows one process at a time.
 import { readFileSync, existsSync, mkdirSync } from "node:fs";
-import { SEED_TYPES, typeRows, prospectRows } from "../lib/seed.mjs";
+import { SEED_TYPES, typeRows } from "../lib/seed.mjs";
 
 // Minimal .env parsing (no dependencies). Real env vars win.
 if (existsSync(".env")) for (const line of readFileSync(".env", "utf8").split("\n")) {
@@ -16,10 +17,9 @@ if (existsSync(".env")) for (const line of readFileSync(".env", "utf8").split("\
 const args = process.argv.slice(2);
 const dry = args.includes("--dry-run");
 const only = args.find((a) => a.startsWith("--type="))?.slice(7);
-const ALL = [...SEED_TYPES, "prospects"];
-if (only && !ALL.includes(only)) { console.error(`Unknown --type=${only}. Use one of: ${ALL.join(", ")}`); process.exit(1); }
-const types = only ? [only] : ALL;
-const plan = types.map((t) => [t, t === "prospects" ? prospectRows() : typeRows(t)]);
+if (only && !SEED_TYPES.includes(only)) { console.error(`Unknown --type=${only}. Use one of: ${SEED_TYPES.join(", ")}`); process.exit(1); }
+const types = only ? [only] : SEED_TYPES;
+const plan = types.map((t) => [t, typeRows(t)]);
 
 if (dry) {
   for (const [t, rows] of plan) console.log(`${t.padEnd(10)} ${rows.length} rows (dry run, not written)`);

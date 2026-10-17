@@ -7,7 +7,7 @@ import { plural } from "@/lib/format";
 async function post(url: string, data: unknown) {
   const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.error || "Something went wrong");
+  if (!r.ok) throw new Error(j.error || "Something went wrong. Try again.");
   return j;
 }
 
@@ -26,7 +26,7 @@ export function ClaimButton({ dealId, claimed, count, signedIn }: { dealId: numb
     <span className="toggle">
       {state.count > 0 && <span className="tcount">{state.count} claimed</span>}
       {state.claimed ? <span className="tbtn on">Claimed ✓</span>
-        : <button type="button" className="tbtn primary" onClick={claim} disabled={busy}>{busy ? "…" : "Claim"}</button>}
+        : <button type="button" className="tbtn primary" onClick={claim} disabled={busy}>{busy ? "Claiming…" : "Claim"}</button>}
       {error && <span className="err small">{error}</span>}
     </span>
   );

@@ -3,32 +3,33 @@
 Instructions for an AI agent working in this repo or managing its data.
 
 ## What this is
-Private members site for Entrepreneurs at Berkeley (members.entrepreneursatberkeley.com), Bookface-style. Home is a member feed (club updates + upcoming events); member pages for Perks, Events, Directory, Resources and Finances; `/crm` holds every type (members, alumni, deals, prospects, VC partners, warm intros, updates, events, resources, finance); `/crm/search` searches all of them; `/admin` manages data.
+Private members site for Entrepreneurs at Berkeley (members.entrepreneursatberkeley.com), Bookface-style. Home is a member feed (club updates + upcoming events). Every type is a first-class page (Directory, Deals, Events, Resources for members; Alumni, VCs, Intros, Finances for admins), and admins add and edit records inline on those pages. There is no CRM section. `/search` searches everything; `/admin` imports and clears data.
 
 Stack: Next.js 15 App Router, React 19, NextAuth v5 beta (email + password via the Credentials provider, members only), Postgres via `DATABASE_URL` in production, embedded PGlite in `./.data` locally. No ORM.
 
 **Invariant: one table.** Every entity is a row in `records(id, type, name, status, data jsonb, notes, created_at, updated_at)`. `type` is a slug from `lib/schema.ts`; `data` holds that type's fields as strings; long text (update body, event description) goes in `notes`. Do not add per-type columns. The only other tables hold per-person activity on records, created in `lib/db.ts` init (one `create table if not exists` call each): `comments` (answers/replies on `updates` posts), `claims` (perk claims: deal_id + member_email, unique) and `rsvps` (event_id + member_email + going, unique). Plus accounts and mail: `users` (email unique, scrypt `password_hash`, name, role admin|member, notifications_enabled) and `blasts` / `blast_recipients` (admin email blasts and per-recipient delivery status). Do not add more without the maintainer's approval.
 
 ## Pages
-Every page reads the same `records` table. Member pages are read-only; editing happens in `/crm` (admin) or the API.
+Every page reads the same `records` table. Each type has one home page; detail pages are `<home>/<id>` and add forms `<home>/new` (admin). Members read; admins edit inline: an Add button in the page head, a save form, Delete and status shortcuts on detail pages. Generic list/detail/add views live in `ui/record-list.tsx` and `ui/record-page.tsx`; the slug -> path map (and which types are admin-only) is `lib/routes.ts`.
 
-There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Directory, Events, Perks, Resources (CRM and Finances only when the admin cookie is set; the pages stay reachable by URL), a built-in search input (plain GET form to `/crm/search?q=`) and the Admin link. Inside the CRM, one row of type tabs (with counts) sits above the list pages: `/crm` lands on the Members table, `/crm/<type>` shows that type, and the old overview dashboard is at `/crm/overview` (linked from the list head). Detail pages link back to their list.
+There is exactly one navbar: the top bar (`Nav` in `components.tsx`) with Directory, Deals, Events, Resources, then Alumni, VCs, Intros and Finances only when the admin cookie is set, a built-in search input (plain GET form to `/search?q=`) and the Admin link. No tab bars, no second nav. Detail pages link back to their list. Members get a read-only view on detail pages; fields marked `internal` in `lib/schema.ts` (and notes, for types with `internalNotes`) are admin-only.
 
 | Route | Module | Data |
 |---|---|---|
 | `/` | Feed: composer (admin), typed post cards, rail with upcoming events, perks, newest members | `updates`, `events`, `deals`, `members` |
-| `/perks`, `/perks/<id>` | Perks: how to claim each confirmed deal, Claim button and claim count | `deals` with status Confirmed or Active |
-| `/events` | Events: upcoming (date chip, Going / Not going with count, external RSVP link) and last 12 past | `events` (Upcoming / Past) |
-| `/directory` | Directory: member grid (expertise chips); cards open the member profile (`/directory/<id>` redirects there) | `members` with status Active or Exec |
-| `/resources` | Resources grouped by category | `resources` with status Published (drafts only in CRM) |
-| `/finances` | Finances: Budget / Spent / Sponsor money / Reimbursed totals + all entries | `finance` |
-| `/crm/members/<id>` | Member profile: building, expertise, posts, intros they can make, perks claimed; admins edit here | `members`, `updates`, `pocs` |
-| `/crm`, `/crm/<type>`, `/crm/<type>/<id>` | CRM: type tabs + lists with filters (`/crm` = Members), edit forms (admin) | every type |
-| `/crm/overview` | CRM dashboard: counts, next steps due, recently updated | every type |
-| `/crm/search` | Search results for the top-bar search input (no form of its own) | every type |
-| `/admin` | Admin: CSV import, clear a tab | every type |
+| `/updates/<id>` | One post with its answers thread; admins pin/unpin, archive/restore, edit, delete | `updates`, `comments` |
+| `/directory`, `/directory/<id>`, `/directory/new` | Member grid (expertise chips); profile: building, expertise, posts, intros they can make, perks claimed; admins edit inline and see Pending/Inactive members below the grid | `members` (grid: Active or Exec) |
+| `/deals`, `/deals/<id>`, `/deals/new` | Members: perks (Confirmed/Active deals) with how to claim, Claim button and count. Admins: the full pipeline table with status filter, "Confirm deal" on detail | `deals` |
+| `/events`, `/events/<id>`, `/events/new` | Upcoming (date chip, Going / Not going with count, external RSVP link) and last 12 past; admins Add / edit | `events` (Upcoming / Past) |
+| `/resources`, `/resources/<id>`, `/resources/new` | Resources grouped by category; admins also see drafts and get Add / Edit | `resources` (members: Published only) |
+| `/finances`, `/finances/<id>`, `/finances/new` | Budget / Spent / Sponsor money / Reimbursed totals + all entries; admins Add / edit | `finance` |
+| `/alumni`, `/vcs`, `/intros` (+ `/<id>`, `/new`) | Admin only (members are redirected to `/`): list with filters, detail/edit | `alumni`, `vcs`, `pocs` |
+| `/search` | Search results for the top-bar search input (no form of its own); members only get records they can open | every type |
+| `/admin` | Admin: type table with counts and Add / Download CSV links, add from a spreadsheet (CSV import), delete everything in a section | every type |
 | `/admin/blasts` | Email blasts: compose, pick recipients, send, history with per-recipient status | `users`, `blasts`, `blast_recipients` |
 | `/login`, `/signup` | Email + password sign-in and member sign-up | `users` |
+
+Old URLs redirect (308, `next.config.mjs`): `/crm/*` to the first-class homes (`/crm/prospects` -> `/deals`, `/crm/pocs` -> `/intros`, `/crm/updates/<id>` -> `/updates/<id>`, `/crm/overview` -> `/admin`, `/crm/search` -> `/search`), `/perks` -> `/deals`.
 
 Finance totals parse the leading number of `amount` (`"$1,200"` -> 1200). Entries without a number are skipped and shown as "n uncounted" on their card. Totals count: Budget = Budget line in Planned/Committed/Paid; Spent = Expense Paid; Sponsor money = Sponsorship Committed/Paid; Reimbursed = Reimbursement Reimbursed.
 
@@ -50,7 +51,7 @@ Auth: `Authorization: Bearer <token>` where the token is the `ADMIN_PASSWORD` (l
 
     # List (filters optional; q matches name, any field, or notes)
     curl -H "$H" "$BASE/api/records?type=members"
-    curl -H "$H" "$BASE/api/records?type=prospects&status=Researching&q=notion"
+    curl -H "$H" "$BASE/api/records?type=deals&status=Researching&q=notion"
     # -> {"count": N, "records": [{id,type,name,status,data,notes,created_at,updated_at}, ...]}
 
     # Get one
@@ -62,6 +63,11 @@ Auth: `Authorization: Bearer <token>` where the token is the `ADMIN_PASSWORD` (l
 
     # Update (only the keys you send change; data is merged into existing data)
     curl -H "$H" -H 'content-type: application/json' -X PATCH "$BASE/api/records/42" -d '{"status":"Past","data":{"link":"https://example.com"}}'
+
+    # Move a record to another type (admin). Its status must be valid for the new type unless you send status too.
+    # Used to migrate rows of a retired type: the list endpoint still returns them for the bearer token.
+    curl -H "$H" "$BASE/api/records?type=prospects"
+    curl -H "$H" -H 'content-type: application/json' -X PATCH "$BASE/api/records/42" -d '{"type":"deals"}'
 
     # Delete
     curl -H "$H" -X DELETE "$BASE/api/records/42"     # -> {"deleted": 42}
@@ -97,16 +103,16 @@ Email blasts (admin: bearer token, admin cookie or admin account; UI at `/admin/
     # -> 201 {"blast_id","recipient_count","sent","failed","status":"sent|partial|failed"}; 503 {"error":"Resend is not configured..."}
     curl -H "$H" "$BASE/api/blasts"                                    # -> history with per-recipient status/error
 
-Types and their fields/statuses: read `lib/schema.ts` (slugs: members, alumni, deals, prospects, vcs, pocs, updates, events, resources, finance). A 400 response lists the allowed types, statuses or field keys.
+Types and their fields/statuses: read `lib/schema.ts` (slugs: members, alumni, deals, vcs, pocs, updates, events, resources, finance). A 400 response lists the allowed types, statuses or field keys.
 
 ## Data onboarding
 Rosters live in `seed/*.json`. Edit those files, then:
 
-    npm run seed:load                  # replace members, alumni, events, updates, resources, finance; re-derive prospects
+    npm run seed:load                  # replace members, alumni, events, updates, resources, finance (never deals)
     npm run seed:load -- --type=members
     npm run seed:load -- --dry-run     # counts only, writes nothing
 
-It replaces every row of each loaded type, so CRM edits to those types are lost. Use the API for one-off changes. It uses `DATABASE_URL` (env or `.env`) or the local PGlite DB. Stop `npm run dev` first when targeting PGlite (one process at a time). A fresh local DB also auto-seeds from the same files.
+It replaces every row of each loaded type, so on-site edits to those types are lost. It never touches deals: they are managed on `/deals` (or the API), and re-deriving them would clobber real confirmed deals. Use the API for one-off changes. It uses `DATABASE_URL` (env or `.env`) or the local PGlite DB. Stop `npm run dev` first when targeting PGlite (one process at a time). A fresh local DB also auto-seeds from the same files.
 
 Shapes (every key optional except `name`; values are strings; unknown keys are stored but not shown):
 
@@ -116,19 +122,19 @@ Shapes (every key optional except `name`; values are strings; unknown keys are s
     seed/updates.json    [{ "name","status","author","date","category","link","member_a","member_b","notes" }]   # category Ask|Intro|Update|Announcement|...; name is the title or the question
     seed/resources.json  [{ "name","status","url","category","owner","notes" }]          # status Published|Draft; notes = description
     seed/finance.json    [{ "name","status","kind","amount","period","counterparty","notes" }]  # amount is text, e.g. "$500"; period YYYY-MM-DD
-    seed/deals.json, seed/recruit.json   outreach research; turned into Prospects (lib/seed.mjs). Do not reshape.
+    seed/deals.json, seed/recruit.json   outreach research; a fresh local DB turns them into deals at Researching / Drafted (lib/seed.mjs). Do not reshape.
 
 Dates are `YYYY-MM-DD`. Statuses and select options must match `lib/schema.ts`. `avatar` and `rsvp` are http(s) URLs (others are not rendered as links). Never invent amounts, people or links: `resources.json` and `finance.json` start empty on purpose.
 
 ## Conventions
-- `lib/schema.ts` is the single source of truth for types, fields, statuses and list columns. Add a field there and forms, lists, search, CSV and the API follow.
+- `lib/schema.ts` is the single source of truth for types, fields, statuses, list columns and display labels. Labels, `singular` and `blurb` are display-only and safe to reword; never rename slugs, field keys, statuses or select options (stored data). Add a field there and forms, lists, search, CSV and the API follow.
 - Never fabricate people, companies or relationships in seed files or via the API. Leave a field empty rather than guess.
 - Writes are admin-only: the admin cookie or an admin account in the UI (`requireAdmin` in `app/actions.ts`), the bearer token in the API.
 - Site access is `hasAccess` (`lib/access.ts`): a `users` account that is an admin, or whose email passes `isMemberEmail` (a Members record with status Active or Exec and a matching email, or an address in `ALLOWED_EMAILS`). Deactivating or deleting the member, or deleting the account, locks them out.
 - Intro posts (category Intro) name `member_a` and `member_b`. An admin's "Request intro" creates a Warm intro (`pocs`: org = member_b, E@B contact = member_a) unless a non-Dropped one exists; then the post shows "Intro made".
-- Prospects are unconfirmed. Only an admin promotes one to a Deal.
-- Navigation: one top nav: Directory, Events, Perks, Resources, CRM and Finances (admins only), a search input, Admin. Inside `/crm` list pages only, the type tab bar. No other second nav. Do not add more nav surfaces.
-- Perks are not a type: they are `deals` with status Confirmed or Active. Confirm a deal (or promote a prospect) to publish a perk.
+- The deal pipeline: Researching, Drafted, Contacted, In conversation, Dropped, Confirmed, Active, Completed, Expired. Before Confirmed nothing is agreed. Promoting is a status change (admin only). Perks are deals at Confirmed/Active.
+- Navigation: one top nav: Directory, Deals, Events, Resources, then Alumni, VCs, Intros and Finances (admins only), a search input, Admin. No second nav, no CRM or console. Do not add more nav surfaces.
+- Perks are not a type: they are `deals` with status Confirmed or Active, shown to members on `/deals`. Confirm a deal to publish a perk.
 - No new npm dependencies without the maintainer's approval.
 
 ## Deploy (Vercel)
