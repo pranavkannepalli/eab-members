@@ -1,27 +1,27 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { isMemberEmail } from "@/lib/access";
+import { hasAccess } from "@/lib/access";
+import { userByEmail, normEmail } from "@/lib/users";
+import { verifyPassword } from "@/lib/password";
 
-const hasGoogle = !!process.env.AUTH_GOOGLE_ID;
-export const devLogin = !hasGoogle && process.env.NODE_ENV !== "production";
-
+// Email + password sign-in against the `users` table. Sessions stay NextAuth JWT cookies.
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [
-    ...(hasGoogle ? [Google({ authorization: { params: { prompt: "select_account" } } })] : []),
-    ...(devLogin ? [Credentials({ credentials: { email: {} }, authorize: async (c) => (c?.email ? { id: String(c.email), email: String(c.email), name: String(c.email) } : null) })] : []),
+    Credentials({
+      credentials: { email: {}, password: {} },
+      authorize: async (c) => {
+        const email = normEmail(c?.email), password = String(c?.password || "");
+        const u = email && password ? await userByEmail(email) : null;
+        if (!u || !(await verifyPassword(password, u.password_hash))) return null;
+        // Members-only: admins, or an Active/Exec member with this email (see lib/access.ts).
+        if (!(await hasAccess(u.email))) return null;
+        return { id: String(u.id), email: u.email, name: u.name };
+      },
+    }),
   ],
-  callbacks: {
-    // Members-only: verified Google email that matches an Active/Exec member (see lib/access.ts).
-    signIn: async ({ user, profile }) => {
-      if (devLogin) return true;
-      if (profile && (profile as { email_verified?: boolean }).email_verified === false) return false;
-      return isMemberEmail(user.email);
-    },
-  },
 });
 
 export async function requireUser() {

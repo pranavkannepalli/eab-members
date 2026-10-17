@@ -17,9 +17,10 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
     <div className="page"><Nav admin />
       <main>
         <div className="head"><div><h1>Admin</h1><p className="muted">You're in admin mode: you can add, edit and delete anything on the site. Lock it when you're done.</p></div>
-          <form action={adminLogout}><button className="btn ghost">Lock admin</button></form></div>
+          <form action={adminLogout}><button className="btn ghost">Lock admin / sign out</button></form></div>
         {msg && <p className="notice">{msg}</p>}
-        <p className="notice">{withEmail} of {total} members can sign in. Only active members and exec with an email on file get in. To let someone in, add their email to their <Link href="/directory">Directory</Link> profile.</p>
+        <p className="notice">{withEmail} of {total} members can create an account. Only active members and exec with an email on file can sign up (at /signup, with that email). To let someone in, add their email to their <Link href="/directory">Directory</Link> profile.</p>
+        <p className="notice"><Link href="/admin/blasts">Email blasts</Link>: write an email to members and see who received past ones.</p>
         <table><thead><tr><th>Section</th><th>Count</th><th>Last updated</th><th></th></tr></thead><tbody>
           {TYPES.map((t) => { const c = counts.find((x) => x.type === t.slug); return (
             <tr key={t.slug}><td><Link href={homeOf(t.slug)}>{t.label}</Link></td><td>{c?.n ?? 0}</td><td className="muted">{c ? new Date(c.last).toLocaleString() : "-"}</td>
@@ -39,7 +40,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
             <input name="confirm" placeholder="Type DELETE to confirm" />
             <button className="btn danger">Delete all</button>
           </form></section>
-        <p className="muted small">To change the admin password, ask whoever manages the site's hosting. It's set in the hosting settings (ADMIN_PASSWORD) and takes effect after a redeploy.</p>
+        <p className="muted small">To change the admin password, ask whoever manages the site's hosting. It's set in the hosting settings (ADMIN_PASSWORD) and takes effect after a redeploy. The admin account (ADMIN_EMAIL, same password) can also sign in on the normal login page.</p>
       </main></div>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signIn, devLogin } from "@/auth";
+import { userSignIn } from "@/app/actions";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   return (
@@ -7,19 +7,13 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       <div className="card">
         <h1>E@B Members</h1>
         <p className="muted">Home base for Entrepreneurs at Berkeley members: people, deals and events.</p>
-        {error && <p className="err">We couldn't find that Google account on the member list. Try the email you gave E@B, or ask an exec to add you.</p>}
-        {devLogin ? (
-          <form action={async (fd) => { "use server"; await signIn("credentials", { email: String(fd.get("email")), redirectTo: "/" }); }}>
-            <input name="email" type="email" placeholder="Any email (local testing)" required />
-            <button className="btn">Dev sign in</button>
-            <p className="muted small">Local testing only. Google sign-in is off here.</p>
-          </form>
-        ) : process.env.AUTH_GOOGLE_ID ? (
-          <form action={async () => { "use server"; await signIn("google", { redirectTo: "/" }); }}>
-            <button className="btn">Sign in with Google</button>
-          </form>
-        ) : null}
-        <p className="small"><Link href="/admin/login">Admin login</Link></p>
+        {error && <p className="err">That email and password didn't match, or the email isn't on the member list anymore. Ask an exec if you think it should be.</p>}
+        <form action={userSignIn}>
+          <input name="email" type="email" placeholder="you@berkeley.edu" autoComplete="email" required autoFocus />
+          <input name="password" type="password" placeholder="Password" autoComplete="current-password" required />
+          <button className="btn">Sign in</button>
+        </form>
+        <p className="small">New here? <Link href="/signup">Create an account</Link> · <Link href="/admin/login">Admin login</Link></p>
       </div>
     </main>
   );

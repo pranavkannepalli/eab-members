@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed:load": "node scripts/seed-load.mjs"
+    "seed:load": "node scripts/seed-load.mjs",
+    "test:resend": "node --test scripts/test-resend.mts"
   },
   "keywords": [],
   "author": "",

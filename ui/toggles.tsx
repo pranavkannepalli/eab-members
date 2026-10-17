@@ -1,5 +1,5 @@
 "use client";
-// Claim (perks) and RSVP (events) buttons. Both need an identity; without one they open the sign-in modal.
+// Claim (perks) and RSVP (events) buttons. Both need an identity; without one they send you to the sign-in page.
 import { useEffect, useState } from "react";
 import { requestSignIn } from "@/ui/identity";
 import { plural } from "@/lib/format";

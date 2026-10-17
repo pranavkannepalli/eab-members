@@ -1,30 +1,17 @@
-// Lightweight identity until Google sign-in ships: the `eab_identity` cookie ({"name","email"}, set by ui/identity.tsx, unverified),
-// else the signed-in session. Used for claims, RSVPs, answer authorship and notifications; never for access control.
-import { cookies } from "next/headers";
+// Who is browsing: the signed-in account (email + password session). Used for claims, RSVPs, answer authorship and notifications.
+// Admins who unlocked with the admin password only have no identity.
 import { auth } from "@/auth";
 import { query, Rec } from "@/lib/db";
 import { today } from "@/lib/feed";
 
-export const IDENTITY_COOKIE = "eab_identity";
-export type Identity = { name: string; email: string; source: "cookie" | "session" };
-
-function parse(raw: string) {
-  for (const s of [raw, (() => { try { return decodeURIComponent(raw); } catch { return ""; } })()]) {
-    try {
-      const j = JSON.parse(s);
-      const name = String(j?.name || "").trim().slice(0, 120), email = String(j?.email || "").trim().toLowerCase().slice(0, 200);
-      if (name && /^[^\s@]+@[^\s@]+$/.test(email)) return { name, email };
-    } catch { /* try the next form */ }
-  }
-  return null;
-}
+export type Identity = { name: string; email: string; notify: boolean };
 
 export async function getIdentity(): Promise<Identity | null> {
-  const raw = (await cookies()).get(IDENTITY_COOKIE)?.value;
-  const c = raw ? parse(raw) : null;
-  if (c) return { ...c, source: "cookie" };
   const u = (await auth())?.user;
-  return u?.email ? { name: u.name || u.email, email: u.email.toLowerCase(), source: "session" } : null;
+  if (!u?.email) return null;
+  const email = u.email.toLowerCase();
+  const [row] = await query("select name, notifications_enabled from users where email=$1", [email]);
+  return row ? { name: row.name || email, email, notify: row.notifications_enabled } : null;
 }
 
 export async function memberByEmail(email: string): Promise<Rec | null> {
