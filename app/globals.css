@@ -114,7 +114,7 @@ fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{back
 /* ── Identity, bell, claim/RSVP toggles ────────────────────────────────────── */
 .idbar{position:relative;display:flex;align-items:center;gap:8px}
 .signin,.mebtn,.bell{font:inherit;font-size:14px;color:var(--mut);background:none;border:1px solid transparent;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
-.signin{border-color:var(--line);padding:5px 14px;color:var(--fg)}.signin:hover,.mebtn:hover,.bell:hover{background:var(--soft);color:var(--fg)}
+.signin{text-decoration:none;border-color:var(--line);padding:5px 14px;color:var(--fg)}.signin:hover,.mebtn:hover,.bell:hover{background:var(--soft);color:var(--fg)}
 .mebtn{padding:3px 10px 3px 3px}.mename{color:var(--fg);font-weight:500}
 .memberpill{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--intro);background:var(--intro-bg);padding:1px 8px;border-radius:999px}
 .bell{position:relative;width:34px;height:34px;justify-content:center;padding:0}
@@ -122,8 +122,6 @@ fieldset:disabled input,fieldset:disabled select,fieldset:disabled textarea{back
 .popover{position:absolute;top:calc(100% + 8px);right:0;z-index:20;width:280px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(1,19,46,.14);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .popover .eyebrow{margin:0 0 6px;font-size:11px}.popover p{margin:0 0 6px}
 .popover a{color:var(--fg)!important;font-size:13.5px;padding:7px 8px;margin:0 -8px;border-radius:8px}.popover a:hover{background:var(--soft);text-decoration:none}
-.modalback{position:fixed;inset:0;z-index:50;background:rgba(1,19,46,.35);display:grid;place-items:center;padding:16px}
-.modal{width:min(380px,100%);display:flex;flex-direction:column;gap:10px;margin:0;box-shadow:0 20px 50px rgba(1,19,46,.25)}.modal h2{margin:0;font-size:22px}.modal p{margin:0}
 .toggle{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.tcount{font-size:12px;color:var(--mut);white-space:nowrap}
 .tbtn{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:999px;padding:4px 12px;cursor:pointer;white-space:nowrap}
 .tbtn:hover:not(:disabled){background:var(--soft)}.tbtn:disabled{cursor:default}

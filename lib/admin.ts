@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { auth } from "@/auth";
+import { isAdminEmail } from "@/lib/access";
 
 const COOKIE = "eab_admin";
 const secret = () => process.env.AUTH_SECRET || "dev-secret";
@@ -19,7 +21,11 @@ export async function setAdminCookie() {
   (await cookies()).set(COOKIE, t, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 12 });
 }
 export async function clearAdminCookie() { (await cookies()).delete(COOKIE); }
+// Admin = the admin-password cookie, or a signed-in account with role admin.
 export async function isAdmin() {
+  return (await hasAdminCookie()) || isAdminEmail((await auth())?.user?.email);
+}
+export async function hasAdminCookie() {
   const v = (await cookies()).get(COOKIE)?.value;
   if (!v) return false;
   const want = createHmac("sha256", secret()).update("admin:" + (process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "admin" : ""))).digest("hex");

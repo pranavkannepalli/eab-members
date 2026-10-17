@@ -22,7 +22,7 @@ export const POST = handle(async (req: Request) => {
   const b = await body(req);
   if (!b) return err(400, "Body must be a JSON object");
   const me = access === "admin" && b.member_email ? { email: String(b.member_email).trim().toLowerCase(), name: String(b.member_name || b.member_email).trim() } : await getIdentity();
-  if (!me?.email) return err(400, "Sign in with your name and email first (eab_identity cookie)");
+  if (!me?.email) return err(400, "Sign in first (or, with the bearer token, pass member_email)");
   const eventId = Number(b.event_id);
   if (!Number.isInteger(eventId) || eventId <= 0) return err(400, "event_id must be a record id");
   if (typeof b.going !== "boolean") return err(400, "going must be true or false");

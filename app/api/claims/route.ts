@@ -4,7 +4,7 @@ import { getIdentity, claimState } from "@/lib/identity";
 export const dynamic = "force-dynamic";
 
 const NO_ACCESS = "Sign in as a member or send Authorization: Bearer <ADMIN_PASSWORD>";
-const NO_IDENTITY = "Sign in with your name and email first (eab_identity cookie)";
+const NO_IDENTITY = "Sign in first (or, with the bearer token, pass member_email)";
 
 // GET /api/claims -> the perks the current identity has claimed
 export const GET = handle(async (req: Request) => {

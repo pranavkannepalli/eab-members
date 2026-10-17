@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { seedRows } from "./seed.mjs";
+import { hashPassword } from "./password";
 
 type Q = (sql: string, params?: unknown[]) => Promise<any[]>;
 let ready: Promise<Q> | null = null;
@@ -38,6 +39,16 @@ async function init(): Promise<Q> {
   // Perk claims and event RSVPs, keyed by the visitor's identity email (lib/identity.ts).
   await q("create table if not exists claims (id serial primary key, deal_id integer not null, member_email text not null, member_name text not null, claimed_at timestamptz not null default now(), unique (deal_id, member_email))");
   await q("create table if not exists rsvps (id serial primary key, event_id integer not null, member_email text not null, member_name text not null, going boolean not null, created_at timestamptz not null default now(), unique (event_id, member_email))");
+  // Email + password accounts (lib/users.ts) and admin email blasts (lib/blasts.ts).
+  await q("create table if not exists users (id serial primary key, email text not null unique, password_hash text not null, name text not null, role text not null default 'member' check (role in ('admin','member')), notifications_enabled boolean not null default true, created_at timestamptz not null default now())");
+  await q("create table if not exists blasts (id serial primary key, subject text not null, body text not null, recipient_count integer not null default 0, status text not null default 'sending', sent_at timestamptz)");
+  await q("create table if not exists blast_recipients (blast_id integer not null references blasts(id) on delete cascade, to_email text not null, status text not null default 'queued', error text, sent_at timestamptz, primary key (blast_id, to_email))");
+  // Admin account for the normal sign-in form: ADMIN_EMAIL + ADMIN_PASSWORD (locally admin@eab.local / admin).
+  // Created once if missing; later password or role changes are never overwritten.
+  const adminEmail = (process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== "production" ? "admin@eab.local" : "")).trim().toLowerCase();
+  const adminPw = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== "production" ? "admin" : "");
+  if (adminEmail && adminPw && (await q("select 1 from users where email=$1", [adminEmail])).length === 0)
+    await q("insert into users(email, password_hash, name, role) values($1,$2,'Admin','admin') on conflict (email) do nothing", [adminEmail, await hashPassword(adminPw)]);
   const [{ n }] = await q("select count(*)::int as n from records");
   // Fresh local DB: auto-seed from seed/*.json. For real onboarding use `npm run seed:load`.
   if (n === 0) {

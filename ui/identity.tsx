@@ -1,53 +1,22 @@
 "use client";
-// Top-bar identity: "Sign in" (name + email, unverified, stored in the eab_identity cookie) or your name, plus the notifications bell.
-// Anything that needs an identity calls requestSignIn() to open the modal.
+// Top-bar identity: "Sign in" (links to /login) or your name, plus the notifications bell.
+// Anything that needs an identity calls requestSignIn() to go to the sign-in page.
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Face } from "@/ui/face";
+import { userSignOut, setNotifications } from "@/app/actions";
 
-const COOKIE = "eab_identity";
 const SEEN = "eab_seen_notices";
-export const requestSignIn = () => window.dispatchEvent(new Event("eab:signin"));
+export const requestSignIn = () => { window.location.href = "/login"; };
 
-type Me = { name: string; email: string; source: "cookie" | "session" };
+type Me = { name: string; email: string; notify: boolean };
 type Notice = { key: string; text: string; href: string };
 
-function SignInModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const [name, setName] = useState(""), [email, setEmail] = useState("");
-  function save(e: React.FormEvent) {
-    e.preventDefault();
-    const v = encodeURIComponent(JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase() }));
-    document.cookie = `${COOKIE}=${v}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-    onClose();
-    router.refresh();
-  }
-  return (
-    <div className="modalback" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form className="card modal" onSubmit={save} role="dialog" aria-modal aria-labelledby="signin-title">
-        <h2 id="signin-title">Who's this?</h2>
-        <p className="muted small">Used to claim perks, RSVP and answer posts. Use the email E@B has on file and you'll show as a member.</p>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required autoFocus />
-        <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@berkeley.edu" required />
-        <div className="row"><button className="btn">Continue</button><button type="button" className="btn ghost" onClick={onClose}>Cancel</button></div>
-      </form>
-    </div>
-  );
-}
-
 export function IdentityBar({ me, member, notices }: { me: Me | null; member: boolean; notices: Notice[] }) {
-  const router = useRouter();
-  const [modal, setModal] = useState(false);
   const [menu, setMenu] = useState<"bell" | "me" | null>(null);
   const [unread, setUnread] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const open = () => setModal(true);
-    window.addEventListener("eab:signin", open);
-    return () => window.removeEventListener("eab:signin", open);
-  }, []);
   // "Read" state lives in this browser only; there is no notifications table.
   useEffect(() => {
     const seen: string[] = JSON.parse(localStorage.getItem(SEEN) || "[]");
@@ -64,11 +33,6 @@ export function IdentityBar({ me, member, notices }: { me: Me | null; member: bo
     setMenu(menu === "bell" ? null : "bell");
     localStorage.setItem(SEEN, JSON.stringify(notices.map((n) => n.key)));
     setUnread(0);
-  }
-  function signOut() {
-    document.cookie = `${COOKIE}=; path=/; max-age=0`;
-    setMenu(null);
-    router.refresh();
   }
 
   return (
@@ -93,13 +57,12 @@ export function IdentityBar({ me, member, notices }: { me: Me | null; member: bo
           {menu === "me" && (
             <div className="popover">
               <p className="small"><b>{me.name}</b><br /><span className="muted">{me.email}</span></p>
-              {me.source === "cookie" ? <button type="button" className="textbtn" onClick={signOut}>Sign out</button>
-                : <p className="muted small">Signed in with your account.</p>}
+              <label className="small"><input type="checkbox" checked={me.notify} onChange={(e) => setNotifications(e.target.checked)} /> Email me club blasts</label>
+              <form action={userSignOut}><button className="textbtn">Sign out</button></form>
             </div>
           )}
         </>
-      ) : <button type="button" className="signin" onClick={() => setModal(true)}>Sign in</button>}
-      {modal && <SignInModal onClose={() => setModal(false)} />}
+      ) : <Link href="/login" className="signin">Sign in</Link>}
     </div>
   );
 }

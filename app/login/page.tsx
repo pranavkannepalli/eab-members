@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signIn, devLogin } from "@/auth";
+import { userSignIn } from "@/app/actions";
 export default async function Login({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
   return (
@@ -7,19 +7,13 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       <div className="card">
         <h1>E@B Members</h1>
         <p className="muted">Entrepreneurs at Berkeley members site.</p>
-        {error && <p className="err">That Google account is not on the E@B members list. Sign in with the email an exec has on file for you.</p>}
-        {devLogin ? (
-          <form action={async (fd) => { "use server"; await signIn("credentials", { email: String(fd.get("email")), redirectTo: "/" }); }}>
-            <input name="email" type="email" placeholder="dev email (local only)" required />
-            <button className="btn">Dev sign in</button>
-            <p className="muted small">Local dev login. Set AUTH_GOOGLE_ID to use Google sign-in.</p>
-          </form>
-        ) : process.env.AUTH_GOOGLE_ID ? (
-          <form action={async () => { "use server"; await signIn("google", { redirectTo: "/" }); }}>
-            <button className="btn">Sign in with Google</button>
-          </form>
-        ) : null}
-        <p className="small"><Link href="/admin/login">Admin login</Link></p>
+        {error && <p className="err">Wrong email or password, or that email is no longer on the E@B members list.</p>}
+        <form action={userSignIn}>
+          <input name="email" type="email" placeholder="you@berkeley.edu" autoComplete="email" required autoFocus />
+          <input name="password" type="password" placeholder="Password" autoComplete="current-password" required />
+          <button className="btn">Sign in</button>
+        </form>
+        <p className="small">New here? <Link href="/signup">Create an account</Link> · <Link href="/admin/login">Admin password</Link></p>
       </div>
     </main>
   );

@@ -1,6 +1,6 @@
-import { auth, devLogin } from "@/auth";
+import { auth } from "@/auth";
 import { checkPassword } from "@/lib/admin";
-import { isMemberEmail } from "@/lib/access";
+import { hasAccess } from "@/lib/access";
 import { TypeCfg } from "@/lib/schema";
 import { isAdmin } from "@/lib/admin";
 
@@ -9,7 +9,7 @@ export async function apiAccess(req: Request): Promise<"admin" | "member" | null
   const m = (req.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i);
   if (m) return checkPassword(m[1].trim()) ? "admin" : null;
   const email = (await auth())?.user?.email;
-  return email && (devLogin || (await isMemberEmail(email))) ? "member" : null;
+  return email && (await hasAccess(email)) ? "member" : null;
 }
 
 // For endpoints the site's own pages call (comments, claims, RSVPs): also accept the admin cookie, since admins browse without a member session.

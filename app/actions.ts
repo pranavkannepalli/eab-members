@@ -5,6 +5,11 @@ import { query } from "@/lib/db";
 import { bySlug, TYPES } from "@/lib/schema";
 import { csvRecords } from "@/lib/csv";
 import { requireAdmin, checkPassword, setAdminCookie, clearAdminCookie } from "@/lib/admin";
+import { AuthError } from "next-auth";
+import { auth, signIn, signOut } from "@/auth";
+import { isMemberEmail } from "@/lib/access";
+import { sendBlast } from "@/lib/blasts";
+import { createUser, userByEmail, normEmail, validEmail, MIN_PASSWORD } from "@/lib/users";
 
 function parse(slug: string, fd: FormData) {
   const cfg = bySlug(slug);
@@ -65,7 +70,47 @@ export async function adminLogin(fd: FormData) {
   await setAdminCookie();
   redirect("/admin");
 }
-export async function adminLogout() { await clearAdminCookie(); redirect("/login"); }
+export async function adminLogout() {
+  await clearAdminCookie();
+  if ((await auth())?.user) await signOut({ redirectTo: "/login" });
+  redirect("/login");
+}
+
+// --- Email + password accounts ---
+async function signInOr(email: string, password: string, failUrl: string) {
+  try {
+    await signIn("credentials", { email, password, redirectTo: "/" });
+  } catch (e) {
+    if (e instanceof AuthError) redirect(failUrl);
+    throw e; // includes the NEXT_REDIRECT from a successful sign-in
+  }
+}
+
+export async function userSignIn(fd: FormData) {
+  await signInOr(normEmail(fd.get("email")), String(fd.get("password") || ""), "/login?error=1");
+}
+
+// Sign-up is open to emails on the member list (Active/Exec Members record, or ALLOWED_EMAILS). New accounts are members.
+export async function userSignUp(fd: FormData) {
+  const name = String(fd.get("name") || "").trim(), email = normEmail(fd.get("email")), password = String(fd.get("password") || "");
+  const fail = (m: string) => redirect(`/signup?error=${encodeURIComponent(m)}`);
+  if (!name) fail("Enter your name.");
+  if (!validEmail(email)) fail("Enter a valid email.");
+  if (password.length < MIN_PASSWORD) fail(`Use at least ${MIN_PASSWORD} characters for your password.`);
+  if (await userByEmail(email)) fail("An account with that email already exists. Sign in instead.");
+  if (!(await isMemberEmail(email))) fail("That email is not on the E@B members list. Use the email an exec has on file for you.");
+  await createUser({ name, email, password });
+  await signInOr(email, password, "/login?error=1");
+}
+
+export async function userSignOut() { await signOut({ redirectTo: "/login" }); }
+
+export async function setNotifications(on: boolean) {
+  const email = (await auth())?.user?.email;
+  if (!email) throw new Error("Not signed in");
+  await query("update users set notifications_enabled=$1 where email=$2", [on, normEmail(email)]);
+  revalidatePath("/", "layout");
+}
 
 // CSV columns: name, status, any field keys for the type, notes (same as the Export CSV).
 export async function importCsv(fd: FormData) {
@@ -100,4 +145,12 @@ export async function requestIntro(postId: number) {
   if (existing.length === 0)
     await query("insert into records(type,name,status,data,notes) values('pocs',$1,'Reached out',$2,'')", [b, JSON.stringify({ kind: "Other", org: b, eab_contact: a, relationship: post.name })]);
   revalidatePath("/");
+}
+
+// --- Email blasts (admin) ---
+export async function sendBlastAction(fd: FormData) {
+  await requireAdmin();
+  const r = await sendBlast({ subject: String(fd.get("subject") || ""), body: String(fd.get("body") || ""), emails: fd.getAll("to").map(String) });
+  const msg = r.ok ? `Blast ${r.status}: ${r.sent} sent${r.failed ? `, ${r.failed} failed` : ""} of ${r.recipient_count}` : r.error;
+  redirect(`/admin/blasts?msg=${encodeURIComponent(msg)}`);
 }
